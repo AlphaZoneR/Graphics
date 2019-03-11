@@ -3,12 +3,6 @@
 using namespace cagd;
 using namespace std;
 
-RealSquareMatrix::RealSquareMatrix(GLuint size):
-        Matrix<GLdouble>(size, size),
-        _lu_decomposition_is_done(GL_FALSE)
-{
-}
-
 GLboolean RealSquareMatrix::PerformLUDecomposition()
 {
     if (_lu_decomposition_is_done)

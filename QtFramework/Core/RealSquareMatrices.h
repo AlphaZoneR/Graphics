@@ -15,7 +15,10 @@ namespace cagd
 
     public:
         // special/default constructor
-        RealSquareMatrix(GLuint size = 1);
+        RealSquareMatrix(GLuint size = 1):
+                Matrix<GLdouble>(size, size),
+                _lu_decomposition_is_done(GL_FALSE)
+        {}
 
         // copy constructor
         RealSquareMatrix(const RealSquareMatrix& m);

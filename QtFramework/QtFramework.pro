@@ -64,14 +64,14 @@ HEADERS += \
     Core/Exceptions.h \
     Core/DCoordinates3.h \
     Core/Matrices.h \
-    Core/RealSquareMatrices.h \
-    Core/test.h
+    Core/test.h \
+    Core/RealSquareMatrices.h
 
 SOURCES += \
     GUI/GLWidget.cpp \
     GUI/MainWindow.cpp \
     GUI/SideWidget.cpp \
     main.cpp \
-    Core/RealSquareMatrices.cpp \
-    Core/test.cpp
+    Core/test.cpp \
+    Core/RealSquareMatrices.cpp
 

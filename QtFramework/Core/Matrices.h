@@ -45,8 +45,8 @@ namespace cagd
         friend std::istream &cagd::operator>><T>(std::istream &, Matrix<T> &rhs);
 
       protected:
-        GLuint _row_count;
         GLuint _column_count;
+        GLuint _row_count;
         std::vector<std::vector<T>> _data;
 
       public:

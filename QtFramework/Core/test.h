@@ -20,67 +20,77 @@ public:
         DCoordinate3 c = a + b;
 
         if (c.x() != 1.0 || c.y() != 2.0 || c.z() != 3.0) {
-            throw std::exception("Invalid summation");
+            throw std::exception();
         }
 
         c = a - b;
 
         if (c.x() != -1.0 || c.y() != -2.0 || c.z() != -3.0) {
-            throw std::exception("Invalid difference");
+//            throw std::exception("Invalid difference");
+            throw std::exception();
         }
 
         c = 4 * b;
 
         if (c.x() != 4.0 || c.y() != 8.0 || c.z() != 12.0) {
-            throw std::exception("Invalid multiply");
+//            throw std::exception("Invalid multiply");
+            throw std::exception();
         }
 
         c = c / 4;
 
         if (c.x() != 1.0 || c.y() != 2.0 || c.z() != 3.0) {
-            throw std::exception("Invalid division");
+//            throw std::exception("Invalid division");
+            throw std::exception();
         }
 
         c = identity ^ b;
 
         if (c.x() != 1.0 || c.y() != -2.0 || c.z() != 1.0) {
-            throw std::exception("Invalid cross product");
+//            throw std::exception("Invalid cross product");
+            throw std::exception();
         }
 
         GLdouble d = identity * b;
 
         if (d != 6.0) {
-            throw std::exception("Invalid dot product");
+//            throw std::exception("Invalid dot product");
+            throw std::exception();
         }
 
         a += b;
 
         if (a.x() != 1.0 || a.y() != 2.0 || a.z() != 3.0) {
-            throw std::exception("Invalid =summation");
+//            throw std::exception("Invalid =summation");
+            throw std::exception();
         }
 
         a -= b;
 
         if (a.x() != 0.0 || a.y() != 0.0 || a.z() != 0.0) {
-            throw std::exception("Invalid =differentiation");
+//            throw std::exception("Invalid =differentiation");
+            throw std::exception();
         }
 
         a = b;
 
         if (a.x() != 1.0 || a.y() != 2.0 || a.z() != 3.0) {
-            throw std::exception("Invalid = equal operator");
+//            throw std::exception("Invalid = equal operator");
+            throw std::exception();
         }
 
         a *= 2;
 
         if (a.x() != 2.0 || a.y() != 4.0 || a.z() != 6.0) {
-            throw std::exception("Invalid =multiplication");
+//            throw std::exception("Invalid =multiplication");
+            throw std::exception();
         }
 
         a /= 2;
 
         if (a.x() != 1.0 || a.y() != 2.0 || a.z() != 3.0) {
-            throw std::exception("Invalid =division");
+//            throw std::exception("Invalid =division");
+            throw std::exception();
         }
 
     }
@@ -89,7 +99,8 @@ public:
         std::ifstream in("test.txt");
 
         if (in.fail()) {
-            throw std::exception("cannot open file");
+//            throw std::exception("cannot open file");
+            throw std::exception();
         }
 
         Matrix<GLfloat> m;
