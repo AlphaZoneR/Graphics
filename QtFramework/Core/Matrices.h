@@ -217,7 +217,7 @@ namespace cagd
     template <typename T>
     GLboolean Matrix<T>::ResizeRows(GLuint row_count)
     {
-        _data.resize(row_count, std::vector<T>(this->_column_count, T(0)));
+        _data.resize(row_count, std::vector<T>(this->_column_count));
         this->_row_count = row_count;
         return GLboolean(true);
     }
@@ -225,9 +225,9 @@ namespace cagd
     template <typename T>
     GLboolean Matrix<T>::ResizeColumns(GLuint column_count)
     {
-        for (std::vector<T> &row : this->_data)
+        for (auto &row : this->_data)
         {
-            row.resize(column_count, 0);
+            row.resize(column_count);
         }
         this->_column_count = column_count;
         return GLboolean(true);

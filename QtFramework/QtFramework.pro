@@ -58,20 +58,29 @@ FORMS += \
     GUI/SideWidget.ui
 
 HEADERS += \
-    GUI/GLWidget.h \
-    GUI/MainWindow.h \
-    GUI/SideWidget.h \
+    Core/Constants.h \
+    Core/GenericCurves3.h \
+    Core/ParametricCurves3.h \
+    Core/TestFunctions.h \
     Core/Exceptions.h \
     Core/DCoordinates3.h \
     Core/Matrices.h \
     Core/test.h \
-    Core/RealSquareMatrices.h
+    Core/RealSquareMatrices.h \
+    GUI/GLWidget.h \
+    GUI/MainWindow.h \
+    GUI/SideWidget.h \
+
 
 SOURCES += \
+    Core/RealSquareMatrices.cpp \
+    Core/GenericCurves3.cpp \
+    Core/ParametricCurves3.cpp \
+    Core/TestFunctions.cpp \
     GUI/GLWidget.cpp \
     GUI/MainWindow.cpp \
     GUI/SideWidget.cpp \
     main.cpp \
-    Core/test.cpp \
-    Core/RealSquareMatrices.cpp
+    Core/test.cpp
+
 

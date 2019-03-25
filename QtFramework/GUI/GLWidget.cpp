@@ -14,8 +14,20 @@ namespace cagd
     //--------------------------------
     // special and default constructor
     //--------------------------------
-    GLWidget::GLWidget(QWidget *parent, const QGLFormat &format): QGLWidget(format, parent)
+    GLWidget::GLWidget(QWidget *parent, const QGLFormat &format): QGLWidget(format, parent), show_d1(false), show_d2(false)
     {
+    }
+
+    GLWidget::~GLWidget() {
+        if (this->parametricCurve) {
+            delete this->parametricCurve;
+            this->parametricCurve = nullptr;
+        }
+
+        if (this->genericCurve) {
+            delete this->genericCurve;
+            this->genericCurve = nullptr;
+        }
     }
 
     //--------------------------------------------------------------------------------------
@@ -28,7 +40,7 @@ namespace cagd
 
         glLoadIdentity();
 
-        _aspect = (double)width() / (double)height();
+        _aspect = static_cast<double>(this->width()) / static_cast<double>(this->height());
         _z_near = 1.0;
         _z_far  = 1000.0;
         _fovy   = 45.0;
@@ -47,6 +59,19 @@ namespace cagd
 
         // enabling the depth test
         glEnable(GL_DEPTH_TEST);
+
+        // enabling a bunch of stuff
+
+        glEnable(GL_POINT_SMOOTH);
+        glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
+
+        glEnable(GL_LINE_SMOOTH);
+        glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
+
+        glEnable(GL_POLYGON_SMOOTH);
+        glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+
+        glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
         // setting the background color
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -79,6 +104,28 @@ namespace cagd
         {
             cout << e << endl;
         }
+
+        RowMatrix<ParametricCurve3::Derivative> derivative(3);
+        derivative(0) = simple4::d0;
+        derivative(1) = simple4::d1;
+        derivative(2) = simple4::d2;
+
+        this->parametricCurve = new ParametricCurve3(derivative, simple4::u_min, simple4::u_max);
+
+        if (!this->parametricCurve) {
+            throw new Exception("Could not create parametricCurve from derivative!");
+        }
+
+        this->genericCurve = this->parametricCurve->GenerateImage(static_cast<GLuint>(200), GL_STATIC_DRAW);
+
+        if (!this->genericCurve) {
+            throw new Exception("Could not create genericCurve from parametricCurve!");
+        }
+
+        if (!this->genericCurve->UpdateVertexBufferObjects(GL_STATIC_DRAW)) {
+            throw new Exception("Could not create VBO for parametric curve!");
+        }
+
     }
 
     //-----------------------
@@ -92,43 +139,34 @@ namespace cagd
         // stores/duplicates the original model view matrix
         glPushMatrix();
 
-            // applying transformations
-            glRotatef(_angle_x, 1.0, 0.0, 0.0);
-            glRotatef(_angle_y, 0.0, 1.0, 0.0);
-            glRotatef(_angle_z, 0.0, 0.0, 1.0);
-            glTranslated(_trans_x, _trans_y, _trans_z);
-            glScaled(_zoom, _zoom, _zoom);
+        glRotatef(_angle_x, 1.0, 0.0, 0.0);
+        glRotatef(_angle_y, 0.0, 1.0, 0.0);
+        glRotatef(_angle_z, 0.0, 0.0, 1.0);
+        glTranslated(_trans_x, _trans_y, _trans_z);
+        glScaled(_zoom, _zoom, _zoom);
 
-            // render your geometry (this is oldest OpenGL rendering technique, later we will use some advanced methods)
 
-            glColor3f(1.0f, 1.0f, 1.0f);
-            glBegin(GL_LINES);
-                glVertex3f(0.0f, 0.0f, 0.0f);
-                glVertex3f(1.1f, 0.0f, 0.0f);
+        if (this->genericCurve) {
+            glColor3f(1.0f, 0.0f, 0.0f);
+            this->genericCurve->RenderDerivatives(0, GL_LINE_STRIP);
 
-                glVertex3f(0.0f, 0.0f, 0.0f);
-                glVertex3f(0.0f, 1.1f, 0.0f);
 
-                glVertex3f(0.0f, 0.0f, 0.0f);
-                glVertex3f(0.0f, 0.0f, 1.1f);
-            glEnd();
 
-            glBegin(GL_TRIANGLES);
-                // attributes
-                glColor3f(1.0f, 0.0f, 0.0f);
-                // associated with position
-                glVertex3f(1.0f, 0.0f, 0.0f);
+            glPointSize(2.0f);
+            glColor3f(0.0f, 0.5f, 0.0f);
 
-                // attributes
-                glColor3f(0.0, 1.0, 0.0);
-                // associated with position
-                glVertex3f(0.0, 1.0, 0.0);
+            if (show_d1) {
+                this->genericCurve->RenderDerivatives(1, GL_LINES);
+                this->genericCurve->RenderDerivatives(1, GL_POINTS);
+            }
 
-                // attributes
-                glColor3f(0.0f, 0.0f, 1.0f);
-                // associated with position
-                glVertex3f(0.0f, 0.0f, 1.0f);
-            glEnd();
+            if (show_d2) {
+                glColor3f(0.1f, 0.5f, 0.9f);
+                this->genericCurve->RenderDerivatives(2, GL_LINES);
+                this->genericCurve->RenderDerivatives(2, GL_POINTS);
+            }
+
+        }
 
         // pops the current matrix stack, replacing the current matrix with the one below it on the stack,
         // i.e., the original model view matrix is restored
@@ -148,7 +186,7 @@ namespace cagd
 
         glLoadIdentity();
 
-        _aspect = (double)w / (double)h;
+        _aspect = static_cast<double>(w) / static_cast<double>(h);
 
         gluPerspective(_fovy, _aspect, _z_near, _z_far);
 
@@ -224,4 +262,106 @@ namespace cagd
             updateGL();
         }
     }
+
+    void GLWidget::wheelEvent(QWheelEvent * qWheelEvent) {
+        if (this->_zoom + (qWheelEvent->delta() / 1200.0) > 0) {
+            this->set_zoom_factor(this->_zoom + (qWheelEvent->delta() / 1200.0));
+        }
+    }
+
+    void GLWidget::set_show_d1(int value) {
+        this->show_d1 = value;
+        this->updateGL();
+    }
+
+    void GLWidget::set_show_d2(int value) {
+        this->show_d2 = value;
+        this->updateGL();
+    }
+
+    void GLWidget::set_curve(std::string value) {
+        RowMatrix<ParametricCurve3::Derivative> derivative(3);
+        bool changed = false;
+        double u_min, u_max;
+
+        if (value == "simple1") {
+            derivative(0) = simple1::d0;
+            derivative(1) = simple1::d1;
+            derivative(2) = simple1::d2;
+
+            u_min = simple1::u_min;
+            u_max = simple1::u_max;
+
+            changed = true;
+        } else if (value == "simple2") {
+            derivative(0) = simple2::d0;
+            derivative(1) = simple2::d1;
+            derivative(2) = simple2::d2;
+
+            u_min = simple2::u_min;
+            u_max = simple2::u_max;
+
+            changed = true;
+        } else if (value == "simple3") {
+            derivative(0) = simple3::d0;
+            derivative(1) = simple3::d1;
+            derivative(2) = simple3::d2;
+
+            u_min = simple3::u_min;
+            u_max = simple3::u_max;
+
+            changed = true;
+        } else if (value == "simple4") {
+            derivative(0) = simple4::d0;
+            derivative(1) = simple4::d1;
+            derivative(2) = simple4::d2;
+
+            u_min = simple4::u_min;
+            u_max = simple4::u_max;
+
+            changed = true;
+        } else if (value == "simple5") {
+            derivative(0) = simple5::d0;
+            derivative(1) = simple5::d1;
+            derivative(2) = simple5::d2;
+
+            u_min = simple5::u_min;
+            u_max = simple5::u_max;
+
+            changed = true;
+        }
+
+
+
+        if (changed) {
+            if (this->parametricCurve) {
+                delete this->parametricCurve;
+            }
+
+            if (this->genericCurve) {
+                delete this->genericCurve;
+            }
+
+            this->parametricCurve = new ParametricCurve3(derivative, simple4::u_min, simple4::u_max);
+
+            if (!this->parametricCurve) {
+                throw new Exception("Could not create parametricCurve from derivative!");
+            }
+
+            this->genericCurve = this->parametricCurve->GenerateImage(static_cast<GLuint>(200), GL_STATIC_DRAW);
+
+            if (!this->genericCurve) {
+                throw new Exception("Could not create genericCurve from parametricCurve!");
+            }
+
+            if (!this->genericCurve->UpdateVertexBufferObjects(GL_STATIC_DRAW)) {
+                throw new Exception("Could not create VBO for parametric curve!");
+            }
+
+            updateGL();
+        }
+
+    }
+
+
 }

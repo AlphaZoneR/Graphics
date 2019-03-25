@@ -3,6 +3,10 @@
 #include <GL/glew.h>
 #include <QGLWidget>
 #include <QGLFormat>
+#include <QWheelEvent>
+
+#include "Core/ParametricCurves3.h"
+#include "Core/TestFunctions.h"
 
 namespace cagd
 {
@@ -27,16 +31,24 @@ namespace cagd
 
         // your other declarations
 
+        ParametricCurve3        * parametricCurve;
+        GenericCurve3           * genericCurve;
+
+        int                    show_d1;
+        int                    show_d2;
+
 
     public:
         // special and default constructor
         // the format specifies the properties of the rendering window
-        GLWidget(QWidget* parent = 0, const QGLFormat& format = QGL::Rgba | QGL::DepthBuffer | QGL::DoubleBuffer);
+        GLWidget(QWidget* parent = nullptr, const QGLFormat& format = QGL::Rgba | QGL::DepthBuffer | QGL::DoubleBuffer);
+        ~GLWidget() override;
 
         // redeclared virtual functions
-        void initializeGL();
-        void paintGL();
-        void resizeGL(int w, int h);
+        void initializeGL() override;
+        void paintGL() override;
+        void resizeGL(int w, int h) override;
+        void wheelEvent(QWheelEvent *) override;
 
     public slots:
         // public event handling methods/slots
@@ -46,8 +58,13 @@ namespace cagd
 
         void set_zoom_factor(double value);
 
+        void set_show_d1(int value);
+        void set_show_d2(int value);
+
         void set_trans_x(double value);
         void set_trans_y(double value);
         void set_trans_z(double value);
+
+        void set_curve(std::string);
     };
 }

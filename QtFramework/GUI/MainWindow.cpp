@@ -48,6 +48,11 @@ namespace cagd
         connect(_side_widget->trans_x_spin_box, SIGNAL(valueChanged(double)), _gl_widget, SLOT(set_trans_x(double)));
         connect(_side_widget->trans_y_spin_box, SIGNAL(valueChanged(double)), _gl_widget, SLOT(set_trans_y(double)));
         connect(_side_widget->trans_z_spin_box, SIGNAL(valueChanged(double)), _gl_widget, SLOT(set_trans_z(double)));
+
+        connect(_side_widget->show_d1, SIGNAL(stateChanged(int)), _gl_widget, SLOT(set_show_d1(int)));
+        connect(_side_widget->show_d2, SIGNAL(stateChanged(int)), _gl_widget, SLOT(set_show_d2(int)));
+
+        connect(_side_widget->curve_edit, SIGNAL(textChanged()), this, SLOT(notify_changed_text()));
     }
 
     //--------------------------------
