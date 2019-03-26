@@ -15,16 +15,8 @@ namespace cagd
         friend class ParametricSurface3;
         friend class TensorProductSurface3;
 
-        // homework: output to stream:
-        // vertex count, face count
-        // list of vertices
-        // list of unit normal vectors
-        // list of texture coordinates
-        // list of faces
-        friend std::ostream& operator <<(std::ostream& lhs, const TriangulatedMesh3& rhs);
-
-        // homework: input from stream: inverse of the ostream operator
-        friend std::istream& operator >>(std::istream& lhs, TriangulatedMesh3& rhs);
+        friend std::ostream& operator <<(std::ostream& lhs, const TriangulatedMesh3& rhs); // -- done
+        friend std::istream& operator >>(std::istream& lhs, TriangulatedMesh3& rhs); // -- done
 
     protected:
         // vertex buffer object identifiers
@@ -67,24 +59,81 @@ namespace cagd
         // at the same time calculates the unit normal vectors associated with vertices
         GLboolean LoadFromOFF(const std::string& file_name, GLboolean translate_and_scale_to_unit_cube = GL_FALSE);
 
-        // homework: saves the geometry into an OFF file
+        // homework: saves the geometry into an OFF file -- done
         GLboolean SaveToOFF(const std::string& file_name) const;
 
         // mapping vertex buffer objects
         GLfloat* MapVertexBuffer(GLenum access_flag = GL_READ_ONLY) const;
-        GLfloat* MapNormalBuffer(GLenum access_flag = GL_READ_ONLY) const;  // homework
-        GLfloat* MapTextureBuffer(GLenum access_flag = GL_READ_ONLY) const; // homework
+        GLfloat* MapNormalBuffer(GLenum access_flag = GL_READ_ONLY) const;  // homework -- done
+        GLfloat* MapTextureBuffer(GLenum access_flag = GL_READ_ONLY) const; // homework -- done
 
         // unmapping vertex buffer objects
         GLvoid UnmapVertexBuffer() const;
-        GLvoid UnmapNormalBuffer() const;   // homework
-        GLvoid UnmapTextureBuffer() const;  // homework
+        GLvoid UnmapNormalBuffer() const;   // homework -- done
+        GLvoid UnmapTextureBuffer() const;  // homework -- done
 
         // get properties of geometry
-        GLuint VertexCount() const; // homework
-        GLuint FaceCount() const;   // homework
+        GLuint VertexCount() const; // homework -- done
+        GLuint FaceCount() const;   // homework -- done
 
         // destructor
         virtual ~TriangulatedMesh3();
     };
+
+    // homework: output to stream: -- done
+    // vertex count, face count
+    // list of vertices
+    // list of unit normal vectors
+    // list of texture coordinates
+    // list of faces
+
+    std::ostream& operator <<(std::ostream& lhs, const TriangulatedMesh3& rhs) {
+        lhs << rhs.VertexCount() << ", " << rhs.FaceCount() << "\n";
+
+        for (const DCoordinate3 &vertex: rhs._vertex) {
+            lhs << vertex << "\n";
+        }
+
+        for (const DCoordinate3 &normal: rhs._normal) {
+            lhs << normal << "\n";
+        }
+
+        for (const TCoordinate4 &t_coordinate: rhs._tex) {
+            lhs << t_coordinate << "\n";
+        }
+
+        for (const TriangularFace &face: rhs._face) {
+            lhs << face << "\n";
+        }
+
+        return lhs;
+    }
+
+    std::istream& operator >>(std::istream& lhs, TriangulatedMesh3& rhs) {
+        size_t v_count, f_count;
+        lhs >> v_count >> f_count;
+
+        rhs._vertex.resize(v_count);
+        rhs._normal.resize(v_count);
+        rhs._tex.resize(v_count);
+        rhs._face.resize(f_count);
+
+        for (DCoordinate3 &vertex: rhs._vertex) {
+            lhs >> vertex;
+        }
+
+        for (DCoordinate3 &normal: rhs._normal) {
+            lhs >> normal;
+        }
+
+        for (TCoordinate4 &t_coordinate: rhs._tex) {
+            lhs >> t_coordinate;
+        }
+
+        for (TriangularFace &face: rhs._face) {
+            lhs >> face;
+        }
+
+        return lhs;
+    }
 }

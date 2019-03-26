@@ -58,6 +58,21 @@ GLvoid TriangulatedMesh3::DeleteVertexBufferObjects()
         _vbo_vertices = 0;
     }
 
+    if (this->_vbo_normals) {
+        glDeleteBuffers(1, &this->_vbo_normals);
+        this->_vbo_normals = 0;
+    }
+
+    if (this->_vbo_tex_coordinates) {
+        glDeleteBuffers(1, &this->_vbo_tex_coordinates);
+        this->_vbo_tex_coordinates = 0;
+    }
+
+    if (this->_vbo_indices) {
+        glDeleteBuffers(1, &this->_vbo_indices);
+        this->_vbo_tex_coordinates = 0;
+    }
+
     // homework: delete vertex buffer objects of unit normal vectors, texture coordinates, and indices
 }
 
@@ -77,24 +92,23 @@ GLboolean TriangulatedMesh3::Render(GLenum render_mode) const
         // activate the VBO of texture coordinates
         glBindBuffer(GL_ARRAY_BUFFER, _vbo_tex_coordinates);
         // specify the location and data format of texture coordinates
-        glTexCoordPointer(4, GL_FLOAT, 0, (const GLvoid *)0);
+        glTexCoordPointer(4, GL_FLOAT, 0, nullptr);
 
         // activate the VBO of normal vectors
         glBindBuffer(GL_ARRAY_BUFFER, _vbo_normals);
         // specify the location and data format of normal vectors
-        glNormalPointer(GL_FLOAT, 0, (const GLvoid *)0);
+        glNormalPointer(GL_FLOAT, 0, nullptr);
 
         // activate the VBO of vertices
         glBindBuffer(GL_ARRAY_BUFFER, _vbo_vertices);
         // specify the location and data format of vertices
-        glVertexPointer(3, GL_FLOAT, 0, (const GLvoid *)0);
+        glVertexPointer(3, GL_FLOAT, 0, nullptr);
 
         // activate the element array buffer for indexed vertices of triangular faces
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _vbo_indices);
 
         // render primitives
-        glDrawElements(render_mode, 3 * (GLsizei)_face.size(), GL_UNSIGNED_INT, (const GLvoid *)0);
-
+        glDrawElements(render_mode, 3 * static_cast<GLsizei>(_face.size()), GL_UNSIGNED_INT, nullptr);
 
     // disable individual client-side capabilities
     glDisableClientState(GL_VERTEX_ARRAY);
@@ -171,17 +185,17 @@ GLboolean TriangulatedMesh3::UpdateVertexBufferObjects(GLenum usage_flag)
 
     // Notice that multiple buffers can be mapped simultaneously.
 
-    GLuint vertex_byte_size = 3 * (GLuint)_vertex.size() * sizeof(GLfloat);
+    GLuint vertex_byte_size = 3 * static_cast<GLuint>(_vertex.size()) * sizeof(GLfloat);
 
     glBindBuffer(GL_ARRAY_BUFFER, _vbo_vertices);
-    glBufferData(GL_ARRAY_BUFFER, vertex_byte_size, 0, _usage_flag);
+    glBufferData(GL_ARRAY_BUFFER, vertex_byte_size, nullptr, _usage_flag);
 
-    GLfloat *vertex_coordinate = (GLfloat*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    GLfloat *vertex_coordinate = static_cast<GLfloat *>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
 
     glBindBuffer(GL_ARRAY_BUFFER, _vbo_normals);
-    glBufferData(GL_ARRAY_BUFFER, vertex_byte_size, 0, _usage_flag);
+    glBufferData(GL_ARRAY_BUFFER, vertex_byte_size, nullptr, _usage_flag);
 
-    GLfloat *normal_coordinate = (GLfloat*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    GLfloat *normal_coordinate = static_cast<GLfloat *>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
 
     for (vector<DCoordinate3>::const_iterator
          vit = _vertex.begin(),
@@ -189,33 +203,33 @@ GLboolean TriangulatedMesh3::UpdateVertexBufferObjects(GLenum usage_flag)
     {
         for (GLint component = 0; component < 3; ++component)
         {
-            *vertex_coordinate = (GLfloat)(*vit)[component];
+            *vertex_coordinate = static_cast<GLfloat>((*vit)[static_cast<GLuint>(component)]);
             ++vertex_coordinate;
 
-            *normal_coordinate = (GLfloat)(*nit)[component];
+            *normal_coordinate = static_cast<GLfloat>((*nit)[static_cast<GLuint>(component)]);
             ++normal_coordinate;
         }
     }
 
-    GLuint tex_byte_size = 4 * (GLuint)_tex.size() * sizeof(GLfloat);
+    GLuint tex_byte_size = 4 * static_cast<GLuint>(_tex.size()) * sizeof(GLfloat);
 
     glBindBuffer(GL_ARRAY_BUFFER, _vbo_tex_coordinates);
-    glBufferData(GL_ARRAY_BUFFER, tex_byte_size, 0, _usage_flag);
-    GLfloat *tex_coordinate = (GLfloat*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
+    glBufferData(GL_ARRAY_BUFFER, tex_byte_size, nullptr, _usage_flag);
+    GLfloat *tex_coordinate = static_cast<GLfloat *>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
     
     memcpy(tex_coordinate, &_tex[0][0], tex_byte_size);
 
-    GLuint index_byte_size = 3 * (GLuint)_face.size() * sizeof(GLuint);
+    GLuint index_byte_size = 3 * static_cast<GLuint>(_face.size()) * sizeof(GLuint);
     
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _vbo_indices);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_byte_size, 0, _usage_flag);
-    GLuint *element = (GLuint*)glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_byte_size, nullptr, _usage_flag);
+    GLuint *element = static_cast<GLuint*>(glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY));
 
     for (vector<TriangularFace>::const_iterator fit = _face.begin(); fit != _face.end(); ++fit)
     {
         for (GLint node = 0; node < 3; ++node)
         {
-            *element = (*fit)[node];
+            *element = (*fit)[static_cast<GLuint>(node)];
             ++element;
         }
     }
@@ -329,7 +343,7 @@ GLboolean TriangulatedMesh3::LoadFromOFF(
         n ^= p;
 
         for (GLint node = 0; node < 3; ++node)
-            _normal[(*fit)[node]] += n;
+            _normal[(*fit)[static_cast<GLuint>(node)]] += n;
     }
 
     for (vector<DCoordinate3>::iterator nit = _normal.begin(); nit != _normal.end(); ++nit)
@@ -340,13 +354,54 @@ GLboolean TriangulatedMesh3::LoadFromOFF(
     return GL_TRUE;
 }
 
+GLboolean TriangulatedMesh3::SaveToOFF(const std::string &file_name) const {
+    ofstream out(file_name);
+
+    out << "OFF\n";
+    out << this->VertexCount() << " " << this->FaceCount() << " 0\n";
+
+    for (const DCoordinate3 &vertex: this->_vertex) {
+        out << vertex << "\n";
+    }
+
+    for (const TriangularFace &face: this->_face) {
+        out << face << "\n";
+    }
+
+    out.close();
+
+    return GL_TRUE;
+}
+
 GLfloat* TriangulatedMesh3::MapVertexBuffer(GLenum access_flag) const
 {
     if (access_flag != GL_READ_ONLY && access_flag != GL_WRITE_ONLY && access_flag != GL_READ_WRITE)
-        return (GLfloat*)0;
+        return nullptr;
 
     glBindBuffer(GL_ARRAY_BUFFER, _vbo_vertices);
-    GLfloat* result = (GLfloat*)glMapBuffer(GL_ARRAY_BUFFER, access_flag);
+    GLfloat* result = static_cast<GLfloat*>(glMapBuffer(GL_ARRAY_BUFFER, access_flag));
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    return result;
+}
+
+GLfloat* TriangulatedMesh3::MapNormalBuffer(GLenum access_flag) const {
+    if (access_flag != GL_READ_ONLY && access_flag != GL_WRITE_ONLY && access_flag != GL_READ_WRITE)
+        return nullptr;
+
+    glBindBuffer(GL_ARRAY_BUFFER, _vbo_normals);
+    GLfloat* result = static_cast<GLfloat*>(glMapBuffer(GL_ARRAY_BUFFER, access_flag));
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    return result;
+}
+
+GLfloat* TriangulatedMesh3::MapTextureBuffer(GLenum access_flag) const {
+    if (access_flag != GL_READ_ONLY && access_flag != GL_WRITE_ONLY && access_flag != GL_READ_WRITE)
+        return nullptr;
+
+    glBindBuffer(GL_ARRAY_BUFFER, _vbo_tex_coordinates);
+    GLfloat* result = static_cast<GLfloat*>(glMapBuffer(GL_ARRAY_BUFFER, access_flag));
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     return result;
@@ -357,6 +412,26 @@ GLvoid TriangulatedMesh3::UnmapVertexBuffer() const
     glBindBuffer(GL_ARRAY_BUFFER, _vbo_vertices);
     glUnmapBuffer(GL_ARRAY_BUFFER);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+GLvoid TriangulatedMesh3::UnmapNormalBuffer() const {
+    glBindBuffer(GL_ARRAY_BUFFER, _vbo_normals);
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+GLvoid TriangulatedMesh3::UnmapTextureBuffer() const {
+    glBindBuffer(GL_ARRAY_BUFFER, _vbo_tex_coordinates);
+    glUnmapBuffer(GL_ARRAY_BUFFER);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+GLuint TriangulatedMesh3::VertexCount() const {
+    return static_cast<GLuint>(this->_vertex.size());
+}
+
+GLuint TriangulatedMesh3::FaceCount() const {
+    return static_cast<GLuint>(this->_face.size());
 }
 
 TriangulatedMesh3::~TriangulatedMesh3()
