@@ -15,6 +15,7 @@ namespace cagd
         GLfloat	_back_shininess;
 
     public:
+
         Material(
             const Color4& front_ambient   = Color4(),
             const Color4& front_diffuse   = Color4(),
@@ -30,27 +31,27 @@ namespace cagd
         GLvoid SetAmbientColor(GLenum face, const Color4& c);
         GLvoid SetAmbientColor(GLenum face, GLfloat r, GLfloat g, GLfloat b, GLfloat a = 1.0f);
 
-        // homework
+        // homework -- done
         GLvoid SetDiffuseColor(GLenum face, const Color4& c);
         GLvoid SetDiffuseColor(GLenum face, GLfloat r, GLfloat g, GLfloat b, GLfloat a = 1.0f);
 
-        // homework
+        // homework -- done
         GLvoid SetSpecularColor(GLenum face, const Color4& c);
         GLvoid SetSpecularColor(GLenum face, GLfloat r, GLfloat g, GLfloat b, GLfloat a = 1.0f);
 
-        // homework
+        // homework -- done
         GLvoid SetEmissiveColor(GLenum face, const Color4& c);
         GLvoid SetEmissiveColor(GLenum face, GLfloat r, GLfloat g, GLfloat b, GLfloat a = 1.0f);
 
-        // homework
+        // homework -- done
         GLvoid SetShininess(GLenum face, GLfloat shininess);
 
-        // homework
-        GLvoid SetTransparency(GLfloat alpha);
+        // homework -- done with question
+        GLvoid SetTransparency(const GLfloat &alpha);
 
         GLvoid Apply();
 
-        // homework
+        // homework -- done with question
         GLboolean IsTransparent() const;
     };
 

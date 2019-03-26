@@ -76,6 +76,78 @@ GLvoid Material::Apply()
     glMaterialf (GL_BACK, GL_SHININESS,  _back_shininess);
 }
 
+GLvoid Material::SetDiffuseColor(GLenum face, const Color4& c) {
+    if (face == GL_FRONT_FACE) {
+        this->_front_diffuse = c;
+    } else if (face == GL_CULL_FACE) {
+        this->_back_diffuse = c;
+    }
+}
+
+GLvoid Material::SetDiffuseColor(GLenum face, GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
+    if (face == GL_FRONT_FACE) {
+        this->_front_diffuse = Color4(r, g, b, a);
+    } else if (face == GL_CULL_FACE) {
+        this->_back_diffuse = Color4(r, g, b, a);
+    }
+}
+
+// homework
+GLvoid Material::SetSpecularColor(GLenum face, const Color4& c) {
+    if (face == GL_FRONT_FACE) {
+        this->_front_specular = c;
+    } else if (face == GL_CULL_FACE) {
+        this->_back_specular = c;
+    }
+}
+GLvoid Material::SetSpecularColor(GLenum face, GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
+    if (face == GL_FRONT_FACE) {
+        this->_front_specular = Color4(r, g, b, a);
+    } else if (face == GL_CULL_FACE) {
+        this->_back_specular = Color4(r, g, b, a);
+    }
+}
+
+// homework
+GLvoid Material::SetEmissiveColor(GLenum face, const Color4& c) {
+    if (face == GL_FRONT_FACE) {
+        this->_front_emissive = c;
+    } else if (face == GL_CULL_FACE) {
+        this->_back_emissive = c;
+    }
+}
+GLvoid Material::SetEmissiveColor(GLenum face, GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
+    if (face == GL_FRONT_FACE) {
+        this->_front_emissive = Color4(r, g, b, a);
+    } else if (face == GL_CULL_FACE) {
+        this->_back_emissive = Color4(r, g, b, a);
+    }
+}
+
+// homework
+GLvoid Material::SetShininess(GLenum face, GLfloat shininess) {
+    if (face == GL_FRONT_FACE) {
+        this->_front_shininess = shininess;
+    } else if (face == GL_CULL_FACE) {
+        this->_back_shininess = shininess;
+    }
+}
+
+GLvoid Material::SetTransparency(const GLfloat& alpha) {
+    this->_front_ambient.a() = alpha;
+    this->_front_specular.a() = alpha;
+    this->_front_diffuse.a() = alpha;
+    this->_front_emissive.a() = alpha;
+
+    this->_back_ambient.a() = alpha;
+    this->_back_specular.a() = alpha;
+    this->_back_diffuse.a() = alpha;
+    this->_back_emissive.a() = alpha;
+}
+
+GLboolean Material::IsTransparent() const {
+    return _front_ambient.a() != 1.0f ||  _front_specular.a() != 1.0f ||  _front_diffuse.a() != 1.0f ||  _front_emissive.a() != 1.0f || _back_ambient.a() != 1.0f ||  _back_specular.a() != 1.0f ||  _back_diffuse.a() != 1.0f ||  _back_emissive.a() != 1.0f;
+}
 // brass
 Material cagd::MatFBBrass = Material(
                         Color4(0.329412f, 0.223529f, 0.027451f, 0.4f),
@@ -166,3 +238,5 @@ Material cagd::MatFBTurquoise = Material(
                         Color4(0.297254f, 0.308290f, 0.306678f, 0.8f),
                         Color4(0.000000f, 0.000000f, 0.000000f, 0.0f),
                         12.8f);
+
+
