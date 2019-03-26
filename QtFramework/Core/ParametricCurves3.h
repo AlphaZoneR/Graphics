@@ -37,5 +37,6 @@ namespace cagd
 
         // set derivatives
         GLvoid SetDerivatives(const RowMatrix<Derivative>& derivatives);
+        Derivative get_derivative(size_t index);
     };
 }

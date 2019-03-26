@@ -26,10 +26,6 @@ namespace cagd
         // private event handling methods/slots
         void on_action_Quit_triggered();
 
-        void notify_changed_text() {
-            if (this->_gl_widget) {
-                _gl_widget->set_curve(this->_side_widget->curve_edit->toPlainText().toUtf8().constData());
-            }
-        }
+        void notify_changed_text();
     };
 }

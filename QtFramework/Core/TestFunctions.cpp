@@ -85,8 +85,8 @@ DCoordinate3 simple3::d2(GLdouble u)
     return DCoordinate3(-3 * (cos(u) + 3 * cos(3 * u)), 9 * sin(3 * u) - 3 * sin(u), -sin(u));
 }
 
-GLdouble simple4::u_min = -TWO_PI;
-GLdouble simple4::u_max = +TWO_PI;
+GLdouble simple4::u_min = -TWO_PI / 6;
+GLdouble simple4::u_max = +TWO_PI / 6;
 
 
 DCoordinate3 simple4::d0(GLdouble u)

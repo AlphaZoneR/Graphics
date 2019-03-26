@@ -31,11 +31,13 @@ namespace cagd
 
         // your other declarations
 
-        ParametricCurve3        * parametricCurve;
-        GenericCurve3           * genericCurve;
+        ParametricCurve3        * parametric_curve;
+        GenericCurve3           * generic_curve;
 
         int                    show_d1;
         int                    show_d2;
+        int                    rotate_y;
+        size_t                 div_points;
 
 
     public:
@@ -56,15 +58,22 @@ namespace cagd
         void set_angle_y(int value);
         void set_angle_z(int value);
 
+        void set_div_points(int value);
+
         void set_zoom_factor(double value);
 
         void set_show_d1(int value);
         void set_show_d2(int value);
+        void set_rotate_y(int value);
 
         void set_trans_x(double value);
         void set_trans_y(double value);
         void set_trans_z(double value);
 
         void set_curve(std::string);
+
+
+    signals :
+        // some value changed
     };
 }

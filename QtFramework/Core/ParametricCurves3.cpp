@@ -77,3 +77,7 @@ GLvoid ParametricCurve3::SetDerivatives(const RowMatrix<Derivative> &derivatives
 {
     this->_derivatives = derivatives;
 }
+
+ParametricCurve3::Derivative ParametricCurve3::get_derivative(size_t index) {
+    return this->_derivatives(index);
+}

@@ -21,14 +21,19 @@ namespace cagd
         {}
 
         // copy constructor
-        RealSquareMatrix(const RealSquareMatrix& m);
+        RealSquareMatrix(const RealSquareMatrix& m); // do
 
         // assignment operator
-        RealSquareMatrix& operator =(const RealSquareMatrix& rhs);
+        RealSquareMatrix& operator =(const RealSquareMatrix& rhs); // do
 
         // square matrices have the same number of rows and columns!
-        GLboolean ResizeRows(GLuint row_count);
-        GLboolean ResizeColumns(GLuint row_count);
+        GLboolean ResizeRows(GLuint row_count); // do
+        GLboolean ResizeColumns(GLuint row_count); // do
+
+        // when writing the above use parent class
+        // initialize class variables
+
+
 
         // tries to determine the LU decomposition of this square matrix
         GLboolean PerformLUDecomposition();

@@ -53,6 +53,10 @@ namespace cagd
         connect(_side_widget->show_d2, SIGNAL(stateChanged(int)), _gl_widget, SLOT(set_show_d2(int)));
 
         connect(_side_widget->curve_edit, SIGNAL(textChanged()), this, SLOT(notify_changed_text()));
+
+        connect(this->_side_widget->div_points_slider, SIGNAL(valueChanged(int)), this->_gl_widget, SLOT(set_div_points(int)));
+
+        connect(this->_side_widget->rotate_y_check, SIGNAL(stateChanged(int)), this->_gl_widget, SLOT(set_rotate_y(int)));
     }
 
     //--------------------------------
@@ -61,5 +65,11 @@ namespace cagd
     void MainWindow::on_action_Quit_triggered()
     {
         qApp->exit(0);
+    }
+
+    void MainWindow::notify_changed_text() {
+        if (this->_gl_widget) {
+            _gl_widget->set_curve(this->_side_widget->curve_edit->toPlainText().toUtf8().constData());
+        }
     }
 }

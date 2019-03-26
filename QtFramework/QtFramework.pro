@@ -33,8 +33,8 @@ win32 {
 }
 
 unix: !mac {
-    message("Unix/Linux platform...")
-
+    QMAKE_CXXFLAGS -= -Wreorder
+    QMAKE_CXXFLAGS += -O2
     # for GLEW installed into /usr/lib/libGLEW.so or /usr/lib/glew.lib
     LIBS += -lGLEW -lGLU
 }

@@ -1,6 +1,7 @@
 #include <QApplication>
 #include "GUI/MainWindow.h"
 #include "Core/test.h"
+#include <memory>
 
 
 using namespace cagd;
@@ -17,5 +18,4 @@ int main(int argc, char **argv)
     mainWindow->showMaximized();
 
     return app->exec();
-
 }
