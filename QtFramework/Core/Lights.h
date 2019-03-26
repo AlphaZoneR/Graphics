@@ -1,4 +1,5 @@
-#pragma once
+#ifndef LIGHTS_H
+#define LIGHTS_H
 
 #include "Colors4.h"
 #include "HCoordinates3.h"
@@ -66,3 +67,6 @@ namespace cagd
             GLfloat             spot_exponent);
     };
 }
+
+
+#endif

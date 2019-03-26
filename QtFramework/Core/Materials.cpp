@@ -76,59 +76,91 @@ GLvoid Material::Apply()
     glMaterialf (GL_BACK, GL_SHININESS,  _back_shininess);
 }
 
+GLvoid Material::SetAmbientColor(GLenum face, const Color4& c) {
+    if (face == GL_FRONT) {
+        this->_front_ambient = c;
+    } else if (face == GL_BACK) {
+        this->_back_ambient = c;
+    } else if (face == GL_FRONT_AND_BACK) {
+        this->_front_ambient = c;
+        this->_back_ambient = c;
+    }
+}
+
 GLvoid Material::SetDiffuseColor(GLenum face, const Color4& c) {
-    if (face == GL_FRONT_FACE) {
+    if (face == GL_FRONT) {
         this->_front_diffuse = c;
-    } else if (face == GL_CULL_FACE) {
+    } else if (face == GL_BACK) {
+        this->_back_diffuse = c;
+    } else if (face == GL_FRONT_AND_BACK) {
+        this->_front_diffuse = c;
         this->_back_diffuse = c;
     }
 }
 
 GLvoid Material::SetDiffuseColor(GLenum face, GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
-    if (face == GL_FRONT_FACE) {
+    if (face == GL_FRONT) {
         this->_front_diffuse = Color4(r, g, b, a);
-    } else if (face == GL_CULL_FACE) {
+    } else if (face == GL_BACK) {
         this->_back_diffuse = Color4(r, g, b, a);
+    } else if (face == GL_FRONT_AND_BACK) {
+        this->_back_diffuse = Color4(r, g, b, a);
+        this->_front_diffuse = Color4(r, g, b, a);
     }
 }
 
 // homework
 GLvoid Material::SetSpecularColor(GLenum face, const Color4& c) {
-    if (face == GL_FRONT_FACE) {
+    if (face == GL_FRONT) {
         this->_front_specular = c;
-    } else if (face == GL_CULL_FACE) {
+    } else if (face == GL_BACK) {
+        this->_back_specular = c;
+    } else if (face == GL_FRONT_AND_BACK) {
+        this->_front_specular = c;
         this->_back_specular = c;
     }
 }
 GLvoid Material::SetSpecularColor(GLenum face, GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
-    if (face == GL_FRONT_FACE) {
+    if (face == GL_FRONT) {
         this->_front_specular = Color4(r, g, b, a);
-    } else if (face == GL_CULL_FACE) {
+    } else if (face == GL_BACK) {
+        this->_back_specular = Color4(r, g, b, a);
+    } else if (face == GL_FRONT_AND_BACK) {
+        this->_front_specular = Color4(r, g, b, a);
         this->_back_specular = Color4(r, g, b, a);
     }
 }
 
 // homework
 GLvoid Material::SetEmissiveColor(GLenum face, const Color4& c) {
-    if (face == GL_FRONT_FACE) {
+    if (face == GL_FRONT) {
         this->_front_emissive = c;
-    } else if (face == GL_CULL_FACE) {
+    } else if (face == GL_BACK) {
         this->_back_emissive = c;
+    } else if (face == GL_FRONT_AND_BACK) {
+        this->_back_emissive = c;
+        this->_front_emissive = c;
     }
 }
 GLvoid Material::SetEmissiveColor(GLenum face, GLfloat r, GLfloat g, GLfloat b, GLfloat a) {
-    if (face == GL_FRONT_FACE) {
+    if (face == GL_FRONT) {
         this->_front_emissive = Color4(r, g, b, a);
-    } else if (face == GL_CULL_FACE) {
+    } else if (face == GL_BACK) {
+        this->_back_emissive = Color4(r, g, b, a);
+    } else if (face == GL_FRONT_AND_BACK) {
+        this->_front_emissive = Color4(r, g, b, a);
         this->_back_emissive = Color4(r, g, b, a);
     }
 }
 
 // homework
 GLvoid Material::SetShininess(GLenum face, GLfloat shininess) {
-    if (face == GL_FRONT_FACE) {
+    if (face == GL_FRONT) {
         this->_front_shininess = shininess;
-    } else if (face == GL_CULL_FACE) {
+    } else if (face == GL_BACK) {
+        this->_back_shininess = shininess;
+    } else if (face == GL_FRONT_AND_BACK) {
+        this->_front_shininess = shininess;
         this->_back_shininess = shininess;
     }
 }

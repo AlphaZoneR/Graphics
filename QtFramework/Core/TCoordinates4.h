@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TCOORDINATES_H
+#define TCOORDINATES_H
 
 #include <GL/glew.h>
 #include <iostream>
@@ -55,3 +56,5 @@ namespace cagd
         return lhs >> rhs._data[0] >> rhs._data[1] >> rhs._data[2] >> rhs._data[3];
     }
 }
+
+#endif

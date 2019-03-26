@@ -1,4 +1,5 @@
-#pragma once
+#ifndef TRIANGULARFACES_H
+#define TRIANGULARFACES_H
 
 #include <GL/glew.h>
 #include <iostream>
@@ -57,3 +58,5 @@ namespace cagd
         return lhs >> rhs._node[0] >> rhs._node[1] >> rhs._node[2];
     }
 }
+
+#endif

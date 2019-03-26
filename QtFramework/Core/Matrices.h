@@ -231,24 +231,30 @@ namespace cagd
     template <typename T>
     GLboolean Matrix<T>::SetRow(GLuint index, const RowMatrix<T> &row)
     {
+        if (index >= this->_row_count || row._column_count != this->_column_count) {
+            return GL_FALSE;
+        }
 
-        // implemet if index not in range and column counts match
+        // implemet if index not in range and column counts match -- done
         this->_data[index] = row._data[0];
 
-        return static_cast<GLboolean>(true);
+        return GL_TRUE;
     }
 
     template <typename T>
     GLboolean Matrix<T>::SetColumn(GLuint index, const ColumnMatrix<T> &column)
     {
-        size_t size = (this->_row_count > column._row_count) ? column._row_count : this->_row_count;
-        // implemet if index not in range and column counts match
-        for (size_t i = 0; i < size; ++i)
+
+        if (column->_row_count != this->_row_count || index >= this->_column_count) {
+            return GL_FALSE;
+        }
+        // implemet if index not in range and row counts match -- done
+        for (size_t i = 0; i < this->_row_count; ++i)
         {
             this->_data[i][index] = column._data[i][0];
         }
 
-        return static_cast<GLboolean>(true);
+        return GL_TRUE;
     }
 
     // destructor
@@ -372,18 +378,32 @@ namespace cagd
     // set dimension
     template<typename T>
     GLboolean TriangularMatrix<T>::ResizeRows(GLuint row_count) {
-        this->_data.resize(row_count, std::vector<T>(0));
-        this->_row_count = row_count;
-
-
-        // optimize only new
-
-        size_t i = 1;
-        for (auto &row: this->_data) {
-            row.resize(i++);
+        if (row_count == this->_row_count) {
+            return GL_TRUE;
         }
 
-        return true;
+        if (row_count > this->_row_count) {
+            size_t diff = static_cast<size_t>(row_count - this->_row_count);
+            for (size_t i = 0; i < diff; ++i) {
+                this->_data.push_back(std::vector<T>(this->_row_count + 1));
+                ++this->_row_count;
+            }
+
+            return GL_TRUE;
+        }
+
+        if (row_count < this->_row_count) {
+            size_t diff = this->_row_count - row_count;
+            for (size_t i = 0; i < diff; ++i) {
+                this->_data.pop_back();
+            }
+
+            this->_row_count = row_count;
+            return GL_TRUE;
+        }
+
+
+        // optimize only new -- done;
     }
 
 

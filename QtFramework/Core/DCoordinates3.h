@@ -1,4 +1,5 @@
-#pragma once
+#ifndef DCOORDINATES_H
+#define DCOORDINATES_H
 
 #include <cmath>
 #include <GL/glew.h>
@@ -282,3 +283,5 @@ namespace cagd
         return lhs >> rhs[0] >> rhs[1] >> rhs[2];
     }
 }
+
+#endif

@@ -15,16 +15,13 @@ namespace cagd
 
     public:
         // special/default constructor
-        RealSquareMatrix(GLuint size = 1):
-                Matrix<GLdouble>(size, size),
-                _lu_decomposition_is_done(GL_FALSE)
-        {}
+        RealSquareMatrix(GLuint size = 1);
 
         // copy constructor
-        RealSquareMatrix(const RealSquareMatrix& m); // do
+        RealSquareMatrix(const RealSquareMatrix& m); // do -- done
 
         // assignment operator
-        RealSquareMatrix& operator =(const RealSquareMatrix& rhs); // do
+        RealSquareMatrix& operator =(const RealSquareMatrix& rhs); // do -- done
 
         // square matrices have the same number of rows and columns!
         GLboolean ResizeRows(GLuint row_count); // do
@@ -32,8 +29,6 @@ namespace cagd
 
         // when writing the above use parent class
         // initialize class variables
-
-
 
         // tries to determine the LU decomposition of this square matrix
         GLboolean PerformLUDecomposition();
@@ -56,22 +51,22 @@ namespace cagd
 
         if (represent_solutions_as_columns)
         {
-            GLint size = GetColumnCount();
-            if ((GLint)b.GetRowCount() != size)
+            GLuint size = GetColumnCount();
+            if (static_cast<GLuint>(b.GetRowCount()) != size)
                     return GL_FALSE;
 
             x = b;
 
             for (GLuint k = 0; k < b.GetColumnCount(); ++k)
             {
-                GLint ii = 0;
-                for (GLint i = 0; i < size; ++i)
+                GLuint ii = 0;
+                for (GLuint i = 0; i < size; ++i)
                 {
                     GLuint ip = _row_permutation[i];
                     T sum = x(ip, k);
                     x(ip, k) = x(i, k);
                     if (ii != 0)
-                        for (GLint j = ii - 1; j < i; ++j)
+                        for (GLuint j = ii - 1; j < i; ++j)
                             sum -= _data[i][j] * x(j, k);
                     else
                         if (sum != 0.0)
@@ -79,10 +74,10 @@ namespace cagd
                     x(i, k) = sum;
                 }
 
-                for (GLint i = size - 1; i >= 0; --i)
+                for (GLint i = static_cast<GLint>(size - 1); i >= 0; --i)
                 {
                     T sum = x(i, k);
-                    for (GLint j = i + 1; j < size; ++j)
+                    for (GLuint j = static_cast<GLuint>(i + 1); j < size; ++j)
                         sum -= _data[i][j] * x(j, k);
                     x(i, k) = sum /= _data[i][i];
                 }
@@ -90,22 +85,22 @@ namespace cagd
         }
         else
         {
-            GLint size = GetRowCount();
-            if ((GLint)b.GetColumnCount() != size)
+            GLuint size = GetRowCount();
+            if (static_cast<GLuint>(b.GetColumnCount()) != size)
                 return GL_FALSE;
 
             x = b;
 
             for (GLuint k = 0; k < b.GetRowCount(); ++k)
             {
-                GLint ii = 0;
-                for (GLint i = 0; i < size; ++i)
+                GLuint ii = 0;
+                for (GLuint i = 0; i < size; ++i)
                 {
                     GLuint ip = _row_permutation[i];
                     T sum = x(k, ip);
                     x(k, ip) = x(k, i);
                     if (ii != 0)
-                        for (GLint j = ii - 1; j < i; ++j)
+                        for (GLuint j = ii - 1; j < i; ++j)
                             sum -= _data[i][j] * x(k, j);
                     else
                         if (sum != 0.0)
@@ -113,10 +108,10 @@ namespace cagd
                     x(k, i) = sum;
                 }
 
-                for (GLint i = size - 1; i >= 0; --i)
+                for (GLint i = static_cast<GLint>(size) - 1; i >= 0; --i)
                 {
                     T sum = x(k, i);
-                    for (GLint j = i + 1; j < size; ++j)
+                    for (GLuint j = static_cast<GLuint>(i) + 1; j < size; ++j)
                         sum -= _data[i][j] * x(k, j);
                     x(k, i) = sum /= _data[i][i];
                 }

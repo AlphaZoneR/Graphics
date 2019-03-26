@@ -87,7 +87,7 @@ namespace cagd
     // list of texture coordinates
     // list of faces
 
-    std::ostream& operator <<(std::ostream& lhs, const TriangulatedMesh3& rhs) {
+    inline std::ostream& operator <<(std::ostream& lhs, const TriangulatedMesh3& rhs) {
         lhs << rhs.VertexCount() << ", " << rhs.FaceCount() << "\n";
 
         for (const DCoordinate3 &vertex: rhs._vertex) {
@@ -109,7 +109,7 @@ namespace cagd
         return lhs;
     }
 
-    std::istream& operator >>(std::istream& lhs, TriangulatedMesh3& rhs) {
+    inline std::istream& operator >>(std::istream& lhs, TriangulatedMesh3& rhs) {
         size_t v_count, f_count;
         lhs >> v_count >> f_count;
 
@@ -136,4 +136,4 @@ namespace cagd
 
         return lhs;
     }
-}
+};

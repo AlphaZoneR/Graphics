@@ -73,7 +73,7 @@ GLvoid TriangulatedMesh3::DeleteVertexBufferObjects()
         this->_vbo_tex_coordinates = 0;
     }
 
-    // homework: delete vertex buffer objects of unit normal vectors, texture coordinates, and indices
+    // homework: delete vertex buffer objects of unit normal vectors, texture coordinates, and indices -- done
 }
 
 GLboolean TriangulatedMesh3::Render(GLenum render_mode) const
@@ -133,15 +133,23 @@ GLboolean TriangulatedMesh3::UpdateVertexBufferObjects(GLenum usage_flag)
     // updating usage flag
     _usage_flag = usage_flag;
 
+
+
     // deleting old vertex buffer objects
     DeleteVertexBufferObjects();
+
+    std::cout << "UpdateVertexBufferObjects:1" << std::endl;
 
     // creating vertex buffer objects of mesh vertices, unit normal vectors, texture coordinates,
     // and element indices
     glGenBuffers(1, &_vbo_vertices);
+    std::cout << "UpdateVertexBufferObjects:2" << std::endl;
+
 
     if (!_vbo_vertices)
         return GL_FALSE;
+
+
 
     glGenBuffers(1, &_vbo_normals);
 
@@ -262,10 +270,11 @@ GLboolean TriangulatedMesh3::UpdateVertexBufferObjects(GLenum usage_flag)
 GLboolean TriangulatedMesh3::LoadFromOFF(
         const string &file_name, GLboolean translate_and_scale_to_unit_cube)
 {
+
     fstream f(file_name.c_str(), ios_base::in);
 
     if (!f || !f.good())
-        return GL_FALSE;
+        throw new Exception("TriangulatedMesh3::LoadFromOFF cannot find file!");
 
     // loading the header
     string header;

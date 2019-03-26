@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MATERIALS_H
+#define MATERIALS_H
 
 #include "Colors4.h"
 #include <GL/glew.h>
@@ -64,3 +65,6 @@ namespace cagd
                 MatFBRuby,
                 MatFBTurquoise;
 }
+
+
+#endif

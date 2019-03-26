@@ -3,6 +3,12 @@
 using namespace cagd;
 using namespace std;
 
+// special/default constructor
+RealSquareMatrix::RealSquareMatrix(GLuint size):
+        Matrix<GLdouble>(size, size),
+        _lu_decomposition_is_done(GL_FALSE)
+{}
+
 GLboolean RealSquareMatrix::PerformLUDecomposition()
 {
     if (_lu_decomposition_is_done)
@@ -93,4 +99,27 @@ GLboolean RealSquareMatrix::PerformLUDecomposition()
     _lu_decomposition_is_done = GL_TRUE;
 
     return GL_TRUE;
+}
+
+RealSquareMatrix::RealSquareMatrix(const RealSquareMatrix &m): Matrix<GLdouble>(m) {
+    this->_lu_decomposition_is_done = m._lu_decomposition_is_done;
+    this->_row_permutation = m._row_permutation;
+}
+
+RealSquareMatrix& RealSquareMatrix::operator=(const RealSquareMatrix& rhs) {
+    if (&rhs != this) {
+        Matrix<GLdouble>::operator=(rhs);
+        this->_lu_decomposition_is_done = rhs._lu_decomposition_is_done;
+        this->_row_permutation = rhs._row_permutation;
+    }
+
+    return (*this);
+}
+
+GLboolean RealSquareMatrix::ResizeRows(GLuint row_count) {
+    return Matrix<GLdouble>::ResizeColumns(row_count) & Matrix<GLdouble>::ResizeColumns(row_count);
+}
+
+GLboolean RealSquareMatrix::ResizeColumns(GLuint column_count) {
+    return Matrix<GLdouble>::ResizeColumns(column_count) & Matrix<GLdouble>::ResizeColumns(column_count);
 }
