@@ -57,6 +57,8 @@ namespace cagd
         connect(this->_side_widget->div_points_slider, SIGNAL(valueChanged(int)), this->_gl_widget, SLOT(set_div_points(int)));
 
         connect(this->_side_widget->rotate_y_check, SIGNAL(stateChanged(int)), this->_gl_widget, SLOT(set_rotate_y(int)));
+
+        connect(this->_gl_widget, SIGNAL(zoom_changed(double)), this->_side_widget->zoom_factor_spin_box, SLOT(setValue(double)));
     }
 
     //--------------------------------

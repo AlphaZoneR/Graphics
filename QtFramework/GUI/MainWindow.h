@@ -15,7 +15,6 @@ namespace cagd
     private:
         SideWidget  *_side_widget;      // pointer to our side widget
         GLWidget    *_gl_widget;        // pointer to our rendering OpenGL widget
-
         QScrollArea *_scroll_area;      // provides a scrolling view onto our side widget
 
     public:
@@ -25,7 +24,6 @@ namespace cagd
     private slots:
         // private event handling methods/slots
         void on_action_Quit_triggered();
-
         void notify_changed_text();
     };
 }

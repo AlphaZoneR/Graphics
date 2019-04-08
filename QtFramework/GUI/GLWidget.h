@@ -4,9 +4,14 @@
 #include <QGLWidget>
 #include <QGLFormat>
 #include <QWheelEvent>
+#include <QTimer>
 
 #include "Core/ParametricCurves3.h"
 #include "Core/TestFunctions.h"
+#include "Core/Constants.h"
+#include "Core/TriangulatedMeshes3.h"
+#include "Core/Materials.h"
+#include "Core/Lights.h"
 
 namespace cagd
 {
@@ -15,7 +20,7 @@ namespace cagd
         Q_OBJECT
 
     private:
-
+        QTimer       *_timer;
         // variables defining the projection matrix
         double       _aspect;            // aspect ratio of the rendering window
         double       _fovy;              // field of view in direction y
@@ -26,6 +31,7 @@ namespace cagd
 
         // variables needed by transformations
         int         _angle_x, _angle_y, _angle_z;
+        double      _mouse_angle;
         double      _zoom;
         double      _trans_x, _trans_y, _trans_z;
 
@@ -39,6 +45,8 @@ namespace cagd
         int                    rotate_y;
         size_t                 div_points;
 
+        TriangulatedMesh3      model;
+        cagd::DirectionalLight  * light;
 
     public:
         // special and default constructor
@@ -75,5 +83,6 @@ namespace cagd
 
     signals :
         // some value changed
+        void zoom_changed(double value);
     };
 }

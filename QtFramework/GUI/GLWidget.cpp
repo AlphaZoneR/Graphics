@@ -14,8 +14,16 @@ namespace cagd
     //--------------------------------
     // special and default constructor
     //--------------------------------
-    GLWidget::GLWidget(QWidget *parent, const QGLFormat &format): QGLWidget(format, parent), show_d1(false), show_d2(false), div_points(200)
+    GLWidget::GLWidget(QWidget *parent, const QGLFormat &format): QGLWidget(format, parent), show_d1(false), show_d2(false), rotate_y(0), div_points(200)
     {
+        this->_timer = new QTimer();
+        this->_timer->setTimerType(Qt::PreciseTimer);
+        this->_timer->setInterval(1000/60);
+
+        connect(this->_timer, SIGNAL(timeout()), this, SLOT(update()));
+
+        this->_timer->start();
+        this->light = nullptr;
     }
 
     GLWidget::~GLWidget() {
@@ -77,6 +85,10 @@ namespace cagd
 
         glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
+        glEnable(GL_LIGHTING);
+        glEnable(GL_LIGHT0);
+        glEnable(GL_NORMALIZE);
+
         // setting the background color
         glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -101,8 +113,11 @@ namespace cagd
                                 "Try to update your driver or buy a new graphics adapter!");
             }
 
-            // create and store your geometry in display lists or vertex buffer objects
-            // ...
+            if (this->model.LoadFromOFF("Models/elephant.off", GL_TRUE)) {
+                if(this->model.UpdateVertexBufferObjects()) {
+                    this->_mouse_angle = 0;
+                }
+            }
         }
         catch (Exception &e)
         {
@@ -130,6 +145,7 @@ namespace cagd
             throw new Exception("Could not create VBO for parametric curve!");
         }
 
+//        this->light = new DirectionalLight(GL_LIGHT0, HCoordinate3(0, 0, 1, 0), Color4(0.4 , 0.4 , 0.4 , 1.0), Color4(0.8f, 0.8f, 0.8f, 1.0f), Color4(1.0f, 1.0f, 1.0f, 1.0f));
     }
 
     //-----------------------
@@ -144,49 +160,98 @@ namespace cagd
             this->_angle_y += 1;
         }
 
+        this->_mouse_angle += DEG_TO_RADIAN;
+        if (this->_mouse_angle >= TWO_PI) {
+            this->_mouse_angle = 0;
+        }
+
+        GLfloat * vertex = this->model.MapVertexBuffer(GL_READ_WRITE);
+        GLfloat * normal = this->model.MapNormalBuffer(GL_READ_ONLY);
+
+        GLfloat scale = static_cast<GLfloat>(sin(this->_mouse_angle) / 3000.0);
+
+        for (size_t i = 0; i < this->model.VertexCount(); ++i) {
+            for (size_t j = 0; j < 3; ++j, ++normal, ++vertex) {
+                *vertex += scale * (*normal);
+            }
+        }
+
+        this->model.UnmapVertexBuffer();
+        this->model.UnmapNormalBuffer();
+
         // clears the color and depth buffers
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        // stores/duplicates the original model view matrix
         glPushMatrix();
 
-        glRotatef(_angle_x, 1.0, 0.0, 0.0);
-        glRotatef(_angle_y, 0.0, 1.0, 0.0);
-        glRotatef(_angle_z, 0.0, 0.0, 1.0);
-        glTranslated(_trans_x, _trans_y, _trans_z);
-        glScaled(_zoom, _zoom, _zoom);
+            // applying transformations
+            glRotatef(_angle_x, 1.0, 0.0, 0.0);
+            glRotatef(_angle_y, 0.0, 1.0, 0.0);
+            glRotatef(_angle_z, 0.0, 0.0, 1.0);
+            glTranslated(_trans_x, _trans_y, _trans_z);
+            glScaled(_zoom, _zoom, _zoom);
 
+            // render your geometry (this is oldest OpenGL rendering technique, later we will use some advanced methods)
 
-        if (this->generic_curve) {
+            glColor3f(1.0f, 1.0f, 1.0f);
+            glBegin(GL_LINES);
+                glVertex3f(0.0f, 0.0f, 0.0f);
+                glVertex3f(1.1f, 0.0f, 0.0f);
 
+                glVertex3f(0.0f, 0.0f, 0.0f);
+                glVertex3f(0.0f, 1.1f, 0.0f);
 
-            glLineWidth(1.0f);
-            glPointSize(2.0f);
-            glColor3f(0.0f, 0.5f, 0.0f);
+                glVertex3f(0.0f, 0.0f, 0.0f);
+                glVertex3f(0.0f, 0.0f, 1.1f);
+            glEnd();
 
-            if (this->show_d1) {
-                this->generic_curve->RenderDerivatives(1, GL_LINES);
-                glColor3f(0.0f, 0.8f, 0.0f);
-                this->generic_curve->RenderDerivatives(1, GL_POINTS);
-            }
+            glBegin(GL_TRIANGLES);
+                // attributes
+                glColor3f(1.0f, 0.0f, 0.0f);
+                // associated with position
+                glVertex3f(1.0f, 0.0f, 0.0f);
 
-            if (this->show_d2) {
-                glColor3f(0.1f, 0.5f, 0.9f);
-                this->generic_curve->RenderDerivatives(2, GL_LINES);
-                glColor3f(1.0f, 1.0f, 1.0f);
-                this->generic_curve->RenderDerivatives(2, GL_POINTS);
-            }
+                // attributes
+                glColor3f(0.0, 1.0, 0.0);
+                // associated with position
+                glVertex3f(0.0, 1.0, 0.0);
 
-            glLineWidth(2.0f);
-            glColor3f(1.0f, 0.0f, 0.0f);
-            this->generic_curve->RenderDerivatives(0, GL_LINE_STRIP);
-        }
+                // attributes
+                glColor3f(0.0f, 0.0f, 1.0f);
+                // associated with position
+                glVertex3f(0.0f, 0.0f, 1.0f);
+            glEnd();
 
         // pops the current matrix stack, replacing the current matrix with the one below it on the stack,
         // i.e., the original model view matrix is restored
         glPopMatrix();
 
-        update();
+//        if (this->generic_curve) {
+
+
+//            glLineWidth(1.0f);
+//            glPointSize(2.0f);
+//            glColor3f(0.0f, 0.5f, 0.0f);
+
+//            if (this->show_d1) {
+//                this->generic_curve->RenderDerivatives(1, GL_LINES);
+//                glColor3f(0.0f, 0.8f, 0.0f);
+//                this->generic_curve->RenderDerivatives(1, GL_POINTS);
+//            }
+
+//            if (this->show_d2) {
+//                glColor3f(0.1f, 0.5f, 0.9f);
+//                this->generic_curve->RenderDerivatives(2, GL_LINES);
+//                glColor3f(1.0f, 1.0f, 1.0f);
+//                this->generic_curve->RenderDerivatives(2, GL_POINTS);
+//            }
+
+//            glLineWidth(2.0f);
+//            glColor3f(1.0f, 0.0f, 0.0f);
+//            this->generic_curve->RenderDerivatives(0, GL_LINE_STRIP);
+//        }
+
+        // pops the current matrix stack, replacing the current matrix with the one below it on the stack,
+        // i.e., the original model view matrix is restored
     }
 
     //----------------------------------------------------------------------------
@@ -209,7 +274,7 @@ namespace cagd
         // switching back to the model view matrix
         glMatrixMode(GL_MODELVIEW);
 
-        updateGL();
+//        updateGL();
     }
 
     //-----------------------------------
@@ -221,7 +286,7 @@ namespace cagd
         if (_angle_x != value)
         {
             _angle_x = value;
-            updateGL();
+//            updateGL();
         }
     }
 
@@ -230,7 +295,7 @@ namespace cagd
         if (_angle_y != value)
         {
             _angle_y = value;
-            updateGL();
+//            updateGL();
         }
     }
 
@@ -239,7 +304,7 @@ namespace cagd
         if (_angle_z != value)
         {
             _angle_z = value;
-            updateGL();
+//            updateGL();
         }
     }
 
@@ -248,7 +313,7 @@ namespace cagd
         if (_zoom != value)
         {
             _zoom = value;
-            updateGL();
+//            updateGL();
         }
     }
 
@@ -257,7 +322,7 @@ namespace cagd
         if (_trans_x != value)
         {
             _trans_x = value;
-            updateGL();
+//            updateGL();
         }
     }
 
@@ -266,7 +331,7 @@ namespace cagd
         if (_trans_y != value)
         {
             _trans_y = value;
-            updateGL();
+//            updateGL();
         }
     }
 
@@ -275,7 +340,7 @@ namespace cagd
         if (_trans_z != value)
         {
             _trans_z = value;
-            updateGL();
+//            updateGL();
         }
     }
 
@@ -284,8 +349,9 @@ namespace cagd
             return;
         }
 
-        if (this->_zoom + (qWheelEvent->delta() / 1200.0) > 0) {
-            this->set_zoom_factor(this->_zoom + (qWheelEvent->delta() / 1200.0));
+        if (this->_zoom + (qWheelEvent->delta() / 12000.0) > 0) {
+            this->set_zoom_factor(this->_zoom + (qWheelEvent->delta() / 12000.0));
+            emit zoom_changed(this->_zoom);
         } else {
             this->_zoom = 0;
         }
@@ -293,12 +359,12 @@ namespace cagd
 
     void GLWidget::set_show_d1(int value) {
         this->show_d1 = value;
-        this->updateGL();
+//        this->updateGL();
     }
 
     void GLWidget::set_show_d2(int value) {
         this->show_d2 = value;
-        this->updateGL();
+//        this->updateGL();
     }
 
     void GLWidget::set_curve(std::string value) {
@@ -380,16 +446,16 @@ namespace cagd
                 throw new Exception("Could not create VBO for parametric curve!");
             }
 
-            this->updateGL();
+//            this->updateGL();
         }
 
     }
 
     void GLWidget::set_div_points(int value) {
-        this->div_points = value;
+        this->div_points = static_cast<size_t>(value);
         if (this->generic_curve) {
             delete this->generic_curve;
-            this->generic_curve;
+            this->generic_curve = nullptr;;
         }
 
         this->generic_curve = this->parametric_curve->GenerateImage(static_cast<GLuint>(this->div_points), GL_STATIC_DRAW);
@@ -401,7 +467,7 @@ namespace cagd
 
         this->generic_curve->UpdateVertexBufferObjects();
 
-        updateGL();
+//        updateGL();
     }
 
     void GLWidget::set_rotate_y(int value) {

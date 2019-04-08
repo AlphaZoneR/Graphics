@@ -108,7 +108,7 @@ GLboolean TriangulatedMesh3::Render(GLenum render_mode) const
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _vbo_indices);
 
         // render primitives
-        glDrawElements(render_mode, 3 * static_cast<GLsizei>(_face.size()), GL_UNSIGNED_INT, nullptr);
+        glDrawElements(render_mode, 3 * (GLsizei) _face.size(), GL_UNSIGNED_INT, (const GLvoid *)0);
 
     // disable individual client-side capabilities
     glDisableClientState(GL_VERTEX_ARRAY);
@@ -133,23 +133,15 @@ GLboolean TriangulatedMesh3::UpdateVertexBufferObjects(GLenum usage_flag)
     // updating usage flag
     _usage_flag = usage_flag;
 
-
-
     // deleting old vertex buffer objects
     DeleteVertexBufferObjects();
-
-    std::cout << "UpdateVertexBufferObjects:1" << std::endl;
 
     // creating vertex buffer objects of mesh vertices, unit normal vectors, texture coordinates,
     // and element indices
     glGenBuffers(1, &_vbo_vertices);
-    std::cout << "UpdateVertexBufferObjects:2" << std::endl;
-
 
     if (!_vbo_vertices)
         return GL_FALSE;
-
-
 
     glGenBuffers(1, &_vbo_normals);
 
@@ -193,17 +185,17 @@ GLboolean TriangulatedMesh3::UpdateVertexBufferObjects(GLenum usage_flag)
 
     // Notice that multiple buffers can be mapped simultaneously.
 
-    GLuint vertex_byte_size = 3 * static_cast<GLuint>(_vertex.size()) * sizeof(GLfloat);
+    GLuint vertex_byte_size = 3 * (GLuint)_vertex.size() * sizeof(GLfloat);
 
     glBindBuffer(GL_ARRAY_BUFFER, _vbo_vertices);
-    glBufferData(GL_ARRAY_BUFFER, vertex_byte_size, nullptr, _usage_flag);
+    glBufferData(GL_ARRAY_BUFFER, vertex_byte_size, 0, _usage_flag);
 
-    GLfloat *vertex_coordinate = static_cast<GLfloat *>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+    GLfloat *vertex_coordinate = (GLfloat*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 
     glBindBuffer(GL_ARRAY_BUFFER, _vbo_normals);
-    glBufferData(GL_ARRAY_BUFFER, vertex_byte_size, nullptr, _usage_flag);
+    glBufferData(GL_ARRAY_BUFFER, vertex_byte_size, 0, _usage_flag);
 
-    GLfloat *normal_coordinate = static_cast<GLfloat *>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+    GLfloat *normal_coordinate = (GLfloat*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
 
     for (vector<DCoordinate3>::const_iterator
          vit = _vertex.begin(),
@@ -211,33 +203,33 @@ GLboolean TriangulatedMesh3::UpdateVertexBufferObjects(GLenum usage_flag)
     {
         for (GLint component = 0; component < 3; ++component)
         {
-            *vertex_coordinate = static_cast<GLfloat>((*vit)[static_cast<GLuint>(component)]);
+            *vertex_coordinate = (GLfloat)(*vit)[component];
             ++vertex_coordinate;
 
-            *normal_coordinate = static_cast<GLfloat>((*nit)[static_cast<GLuint>(component)]);
+            *normal_coordinate = (GLfloat)(*nit)[component];
             ++normal_coordinate;
         }
     }
 
-    GLuint tex_byte_size = 4 * static_cast<GLuint>(_tex.size()) * sizeof(GLfloat);
+    GLuint tex_byte_size = 4 * (GLuint)_tex.size() * sizeof(GLfloat);
 
     glBindBuffer(GL_ARRAY_BUFFER, _vbo_tex_coordinates);
-    glBufferData(GL_ARRAY_BUFFER, tex_byte_size, nullptr, _usage_flag);
-    GLfloat *tex_coordinate = static_cast<GLfloat *>(glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY));
+    glBufferData(GL_ARRAY_BUFFER, tex_byte_size, 0, _usage_flag);
+    GLfloat *tex_coordinate = (GLfloat*)glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY);
     
     memcpy(tex_coordinate, &_tex[0][0], tex_byte_size);
 
-    GLuint index_byte_size = 3 * static_cast<GLuint>(_face.size()) * sizeof(GLuint);
+    GLuint index_byte_size = 3 * (GLuint)_face.size() * sizeof(GLuint);
     
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _vbo_indices);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_byte_size, nullptr, _usage_flag);
-    GLuint *element = static_cast<GLuint*>(glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY));
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, index_byte_size, 0, _usage_flag);
+    GLuint *element = (GLuint*)glMapBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_WRITE_ONLY);
 
     for (vector<TriangularFace>::const_iterator fit = _face.begin(); fit != _face.end(); ++fit)
     {
         for (GLint node = 0; node < 3; ++node)
         {
-            *element = (*fit)[static_cast<GLuint>(node)];
+            *element = (*fit)[node];
             ++element;
         }
     }
@@ -266,6 +258,7 @@ GLboolean TriangulatedMesh3::UpdateVertexBufferObjects(GLenum usage_flag)
 
     return GL_TRUE;
 }
+
 
 GLboolean TriangulatedMesh3::LoadFromOFF(
         const string &file_name, GLboolean translate_and_scale_to_unit_cube)
@@ -352,7 +345,7 @@ GLboolean TriangulatedMesh3::LoadFromOFF(
         n ^= p;
 
         for (GLint node = 0; node < 3; ++node)
-            _normal[(*fit)[static_cast<GLuint>(node)]] += n;
+            _normal[(*fit)[node]] += n;
     }
 
     for (vector<DCoordinate3>::iterator nit = _normal.begin(); nit != _normal.end(); ++nit)
@@ -388,7 +381,7 @@ GLfloat* TriangulatedMesh3::MapVertexBuffer(GLenum access_flag) const
         return nullptr;
 
     glBindBuffer(GL_ARRAY_BUFFER, _vbo_vertices);
-    GLfloat* result = static_cast<GLfloat*>(glMapBuffer(GL_ARRAY_BUFFER, access_flag));
+    GLfloat* result = (GLfloat *) (glMapBuffer(GL_ARRAY_BUFFER, access_flag));
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     return result;
@@ -399,7 +392,7 @@ GLfloat* TriangulatedMesh3::MapNormalBuffer(GLenum access_flag) const {
         return nullptr;
 
     glBindBuffer(GL_ARRAY_BUFFER, _vbo_normals);
-    GLfloat* result = static_cast<GLfloat*>(glMapBuffer(GL_ARRAY_BUFFER, access_flag));
+    GLfloat* result = (GLfloat *) (glMapBuffer(GL_ARRAY_BUFFER, access_flag));
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     return result;
@@ -410,7 +403,7 @@ GLfloat* TriangulatedMesh3::MapTextureBuffer(GLenum access_flag) const {
         return nullptr;
 
     glBindBuffer(GL_ARRAY_BUFFER, _vbo_tex_coordinates);
-    GLfloat* result = static_cast<GLfloat*>(glMapBuffer(GL_ARRAY_BUFFER, access_flag));
+    GLfloat* result = (GLfloat *) glMapBuffer(GL_ARRAY_BUFFER, access_flag);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
     return result;

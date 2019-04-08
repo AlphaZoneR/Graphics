@@ -13,9 +13,14 @@ int main(int argc, char **argv)
     std::unique_ptr<QApplication> app(new QApplication(argc, argv));
     app->setAttribute(Qt::AA_UseDesktopOpenGL, true);
 
-    std::unique_ptr<MainWindow> mainWindow(new MainWindow());
+    try {
 
-    mainWindow->showMaximized();
+        std::unique_ptr<MainWindow> mainWindow(new MainWindow());
 
-    return app->exec();
+        mainWindow->showMaximized();
+
+        return app->exec();
+    } catch (Exception e) {
+        std::cout << e << std::endl;
+    }
 }
