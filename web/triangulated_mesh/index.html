@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://necolas.github.io/normalize.css/8.0.1/normalize.css">
+    <link rel="stylesheet" href="index.css">
+    <title>Graphics</title>
+</head>
+
+<body>
+    <canvas id="drawable"></canvas>
+
+    <div class="editor">
+        <label for="scale-slider">Scale: </label>
+        <input type="range" min="0.1" max="500" value="100" id="scale-slider">
+
+        <label for="rotate-x-slider">TranslateX: </label>
+        <input type="range" min="-180" max="180" value="0" id="rotate-x-slider">
+
+        <label for="rotate-y-slider">TranslateY: </label>
+        <input type="range" min="-180" max="180" value="0" id="rotate-y-slider">
+
+        <label for="rotate-z-slider">TranslateZ: </label>
+        <input type="range" min="-180" max="180" value="0" id="rotate-z-slider">
+
+        <label for="current-curve">Current curve</label>
+        <input type="text" id="current-curve">
+
+        <label for="d1-checkbox">Show d1</label>
+        <input id="d1-checkbox" checked="true" type="checkbox">
+
+        <label for="d2-checkbox">Show d2</label>
+        <input id="d2-checkbox" checked="true" type="checkbox">
+
+        <label for="point-count">Point count:</label>
+        <input id="point-count" min="50" max="1000" value="200" type="number">
+    </div>
+
+    <script src="/lodash.js"></script>
+    <script src="/Core/DCoordinates.js"></script>
+    <script src="/Core/Matrix.js"></script>
+    <script src="/Core/ColumnMatrix.js"></script>
+    <script src="/Core/RowMatrix.js"></script>
+    <script src="/Core/TriangularMatrix.js"></script>
+    <script src="/Core/HCoordinate3.js"></script>
+    <script src="/Core/GenericCurve3.js"></script>
+    <script src="/Core/ParametricCurve3.js"></script>
+    <script src="/Core/ParametricCurves.js"></script>
+    <script src="/Core/TriangularFace.js"></script>
+    <script src="/Core/TCoordinate4.js"></script>
+    <script src="/Core/TriangulatedMesh3.js"></script>
+    <script src="/Core/Utils.js"></script>
+    <script src="index.js"></script>
+</body>
+
+</html>

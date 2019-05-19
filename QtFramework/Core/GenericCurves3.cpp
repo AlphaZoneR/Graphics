@@ -146,6 +146,7 @@ GLboolean GenericCurve3::UpdateVertexBufferObjects(GLenum usage_flag)
 
     // curve points
     GLuint curve_point_byte_size = 3 * curve_point_count * sizeof(GLfloat);
+    printf("%d", this->_usage_flag);
 
     glBindBuffer(GL_ARRAY_BUFFER, _vbo_derivative(0));
     glBufferData(GL_ARRAY_BUFFER, curve_point_byte_size, nullptr, _usage_flag);

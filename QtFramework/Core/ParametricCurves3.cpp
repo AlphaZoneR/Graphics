@@ -29,6 +29,7 @@ GenericCurve3* ParametricCurve3::GenerateImage(GLuint div_point_count, GLenum us
     GenericCurve3* result = nullptr;
 
     result = new GenericCurve3(_derivatives.GetColumnCount() - 1, div_point_count, usage_flag);
+    std::cout << _derivatives.GetColumnCount() - 1 << std::endl;
 
     if (!result)
 	{

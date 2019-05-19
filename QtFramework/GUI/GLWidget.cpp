@@ -125,11 +125,11 @@ namespace cagd
         }
 
         RowMatrix<ParametricCurve3::Derivative> derivative(3);
-        derivative(0) = simple1::d0;
-        derivative(1) = simple1::d1;
-        derivative(2) = simple1::d2;
+        derivative(0) = spiral_on_cone::d0;
+        derivative(1) = spiral_on_cone::d1;
+        derivative(2) = spiral_on_cone::d2;
 
-        this->parametric_curve = new ParametricCurve3(derivative, simple1::u_min, simple1::u_max);
+        this->parametric_curve = new ParametricCurve3(derivative, spiral_on_cone::u_min, spiral_on_cone::u_max);
 
         if (!this->parametric_curve) {
             throw new Exception("Could not create parametricCurve from derivative!");
@@ -184,71 +184,70 @@ namespace cagd
         glPushMatrix();
 
             // applying transformations
-            glRotatef(_angle_x, 1.0, 0.0, 0.0);
-            glRotatef(_angle_y, 0.0, 1.0, 0.0);
-            glRotatef(_angle_z, 0.0, 0.0, 1.0);
-            glTranslated(_trans_x, _trans_y, _trans_z);
-            glScaled(_zoom, _zoom, _zoom);
+        glRotatef(_angle_x, 1.0, 0.0, 0.0);            glRotatef(_angle_y, 0.0, 1.0, 0.0);
+        glRotatef(_angle_z, 0.0, 0.0, 1.0);
+        glTranslated(_trans_x, _trans_y, _trans_z);
+        glScaled(_zoom, _zoom, _zoom);
 
-            // render your geometry (this is oldest OpenGL rendering technique, later we will use some advanced methods)
+//            // render your geometry (this is oldest OpenGL rendering technique, later we will use some advanced methods)
 
-            glColor3f(1.0f, 1.0f, 1.0f);
-            glBegin(GL_LINES);
-                glVertex3f(0.0f, 0.0f, 0.0f);
-                glVertex3f(1.1f, 0.0f, 0.0f);
+//            glColor3f(1.0f, 1.0f, 1.0f);
+//            glBegin(GL_LINES);
+//                glVertex3f(0.0f, 0.0f, 0.0f);
+//                glVertex3f(1.1f, 0.0f, 0.0f);
 
-                glVertex3f(0.0f, 0.0f, 0.0f);
-                glVertex3f(0.0f, 1.1f, 0.0f);
+//                glVertex3f(0.0f, 0.0f, 0.0f);
+//                glVertex3f(0.0f, 1.1f, 0.0f);
 
-                glVertex3f(0.0f, 0.0f, 0.0f);
-                glVertex3f(0.0f, 0.0f, 1.1f);
-            glEnd();
+//                glVertex3f(0.0f, 0.0f, 0.0f);
+//                glVertex3f(0.0f, 0.0f, 1.1f);
+//            glEnd();
 
-            glBegin(GL_TRIANGLES);
-                // attributes
-                glColor3f(1.0f, 0.0f, 0.0f);
-                // associated with position
-                glVertex3f(1.0f, 0.0f, 0.0f);
+//            glBegin(GL_TRIANGLES);
+//                // attributes
+//                glColor3f(1.0f, 0.0f, 0.0f);
+//                // associated with position
+//                glVertex3f(1.0f, 0.0f, 0.0f);
 
-                // attributes
-                glColor3f(0.0, 1.0, 0.0);
-                // associated with position
-                glVertex3f(0.0, 1.0, 0.0);
+//                // attributes
+//                glColor3f(0.0, 1.0, 0.0);
+//                // associated with position
+//                glVertex3f(0.0, 1.0, 0.0);
 
-                // attributes
-                glColor3f(0.0f, 0.0f, 1.0f);
-                // associated with position
-                glVertex3f(0.0f, 0.0f, 1.0f);
-            glEnd();
+//                // attributes
+//                glColor3f(0.0f, 0.0f, 1.0f);
+//                // associated with position
+//                glVertex3f(0.0f, 0.0f, 1.0f);
+//            glEnd();
 
         // pops the current matrix stack, replacing the current matrix with the one below it on the stack,
         // i.e., the original model view matrix is restored
+
+        if (this->generic_curve) {
+
+
+            glLineWidth(1.0f);
+            glPointSize(2.0f);
+            glColor3f(0.0f, 0.5f, 0.0f);
+
+            if (this->show_d1) {
+                this->generic_curve->RenderDerivatives(1, GL_LINES);
+                glColor3f(0.0f, 0.8f, 0.0f);
+                this->generic_curve->RenderDerivatives(1, GL_POINTS);
+            }
+
+            if (this->show_d2) {
+                glColor3f(0.1f, 0.5f, 0.9f);
+                this->generic_curve->RenderDerivatives(2, GL_LINES);
+                glColor3f(1.0f, 1.0f, 1.0f);
+                this->generic_curve->RenderDerivatives(2, GL_POINTS);
+            }
+
+            glLineWidth(2.0f);
+            glColor3f(1.0f, 0.0f, 0.0f);
+            this->generic_curve->RenderDerivatives(0, GL_LINE_STRIP);
+        }
         glPopMatrix();
-
-//        if (this->generic_curve) {
-
-
-//            glLineWidth(1.0f);
-//            glPointSize(2.0f);
-//            glColor3f(0.0f, 0.5f, 0.0f);
-
-//            if (this->show_d1) {
-//                this->generic_curve->RenderDerivatives(1, GL_LINES);
-//                glColor3f(0.0f, 0.8f, 0.0f);
-//                this->generic_curve->RenderDerivatives(1, GL_POINTS);
-//            }
-
-//            if (this->show_d2) {
-//                glColor3f(0.1f, 0.5f, 0.9f);
-//                this->generic_curve->RenderDerivatives(2, GL_LINES);
-//                glColor3f(1.0f, 1.0f, 1.0f);
-//                this->generic_curve->RenderDerivatives(2, GL_POINTS);
-//            }
-
-//            glLineWidth(2.0f);
-//            glColor3f(1.0f, 0.0f, 0.0f);
-//            this->generic_curve->RenderDerivatives(0, GL_LINE_STRIP);
-//        }
 
         // pops the current matrix stack, replacing the current matrix with the one below it on the stack,
         // i.e., the original model view matrix is restored
