@@ -45,8 +45,13 @@ window.addEventListener('load', async (event) => {
   canvas.width = canvas.clientWidth;
   canvas.height = canvas.clientHeight;
 
-  globalThis.mesh = new TriangulatedMesh3();
-  await globalThis.mesh.fromOFF('/meshes/elephant.off', true);
+  let pd = new TriangularMatrix(2);
+  pd.set(0, 0, surface1.d00);
+  pd.set(1, 0, surface1.d10);
+  pd.set(1, 1, surface1.d01);
+
+  const surface = new ParametricSurface3(pd, surface1.uMin, surface1.uMax, surface1.vMin, surface1.vMax);
+  globalThis.mesh = surface.generateImage(200, 200, gl.STATIC_DRAW);
   globalThis.mesh.updateVertexBufferObjects(gl.STATIC_DRAW);
   gl.enable(gl.DEPTH_TEST);
 

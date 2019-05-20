@@ -16,11 +16,11 @@ class TriangulatedMesh3 {
       this.lightVbo = null;
       this.leftMostVertex = new DCoordinate3();
       this.rightMostVertex = new DCoordinate3();
-      this.vertex = new Array(vertexCount); // DCoordinate3
+      this.vertex = new Array(vertexCount).fill(new DCoordinate3()); // DCoordinate3
       this.normal = new Array(vertexCount).fill(new DCoordinate3()); // DCoordinate3
 
-      this.tex = new Array(vertexCount); // TCoord4
-      this.face = new Array(faceCount);  // TriangularFace
+      this.tex = new Array(vertexCount).fill(new TCoordinate4()); // TCoord4
+      this.face = new Array(faceCount).fill(new TriangularFace());  // TriangularFace
       glProgramFrom('/shaders/vert_mesh.glsl', '/shaders/frag_mesh.glsl')
         .then((program) => {
           this.program = program;
@@ -135,7 +135,7 @@ class TriangulatedMesh3 {
       }
 
       const floatVerticesArray = new Float32Array(this.vertex.map(dcoordiante => [dcoordiante.x, dcoordiante.y, dcoordiante.z]).flat());
-
+      console.log(floatVerticesArray);
       gl.bindBuffer(GL.ARRAY_BUFFER, this.vboVertices);
       gl.bufferData(GL.ARRAY_BUFFER, floatVerticesArray, this.usageFlag);
 
