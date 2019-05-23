@@ -9,17 +9,22 @@ class ParametricSurface3 {
 
     generateImage(uDivCount, vDivCount, usageFlag) {
         if (this.pd.rowCount < 2 || uDivCount < 2 || vDivCount < 2) {
+            console.error(`[Error] Geneare pd.rowCout < 2 || uDivCount < 2 || vDivCount < 2`);
             return null;
         }
 
-        let result = new TriangulatedMesh3(uDivCount * vDivCount, 2 * (uDivCount - 1) * (vDivCount - 1), usageFlag);
+        let result = new TriangulatedMesh3(
+            uDivCount * vDivCount,
+            2 * (uDivCount - 1) * (vDivCount - 1),
+            usageFlag);
 
         const du = (this.uMax - this.uMin) / (uDivCount - 1);
         const dv = (this.vMax - this.vMin) / (vDivCount - 1);
 
+        
         const ds = 1.0 / (uDivCount - 1);
         const dt = 1.0 / (vDivCount - 1);
-
+        
         let currentFace = 0;
 
         for (let i = 0; i < uDivCount; ++i) {
@@ -58,6 +63,7 @@ class ParametricSurface3 {
                 }
             }
         }
+        console.log(result.face);
         return result;
     }
 }

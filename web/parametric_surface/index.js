@@ -46,15 +46,14 @@ window.addEventListener('load', async (event) => {
   canvas.height = canvas.clientHeight;
 
   let pd = new TriangularMatrix(2);
-  pd.set(0, 0, surface1.d00);
-  pd.set(1, 0, surface1.d10);
-  pd.set(1, 1, surface1.d01);
+  pd.set(0, 0, secondSurface.d00);
+  pd.set(1, 0, secondSurface.d10);
+  pd.set(1, 1, secondSurface.d01);
 
-  const surface = new ParametricSurface3(pd, surface1.uMin, surface1.uMax, surface1.vMin, surface1.vMax);
+  const surface = new ParametricSurface3(pd, secondSurface.uMin, secondSurface.uMax, secondSurface.vMin, fourthSurface.vMax);
   globalThis.mesh = surface.generateImage(200, 200, gl.STATIC_DRAW);
   globalThis.mesh.updateVertexBufferObjects(gl.STATIC_DRAW);
   gl.enable(gl.DEPTH_TEST);
-
 
   drawFrame();
 });
@@ -62,7 +61,7 @@ window.addEventListener('load', async (event) => {
 function drawFrame() {
   globalThis.gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-  globalThis.gl.clearColor(0.1, 0.1, 0.1, 1);
+  globalThis.gl.clearColor(0.05, 0.05, 0.05, 1);
   globalThis.gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   globalThis.mesh.render(globalThis.gl.TRIANGLES);

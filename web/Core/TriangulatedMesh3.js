@@ -7,7 +7,7 @@ class TriangulatedMesh3 {
       this.currentXRotate = 0;
       this.currentYRotate = 0;
       this.currentZRotate = 0;
-      this.currMaterial = rubyMat;
+      this.currMaterial = MatFBBrass;
       this.usageFlag = usageFlag;
       this.vboVertices = null;
       this.vboNormals = null;
@@ -16,35 +16,43 @@ class TriangulatedMesh3 {
       this.lightVbo = null;
       this.leftMostVertex = new DCoordinate3();
       this.rightMostVertex = new DCoordinate3();
-      this.vertex = new Array(vertexCount).fill(new DCoordinate3()); // DCoordinate3
-      this.normal = new Array(vertexCount).fill(new DCoordinate3()); // DCoordinate3
-
-      this.tex = new Array(vertexCount).fill(new TCoordinate4()); // TCoord4
-      this.face = new Array(faceCount).fill(new TriangularFace());  // TriangularFace
-      glProgramFrom('/shaders/vert_mesh.glsl', '/shaders/frag_mesh.glsl')
+      this.vertex = new Array(vertexCount).fill().map(u => new DCoordinate3());
+      this.normal = new Array(vertexCount).fill().map(u => new DCoordinate3());
+      this.tex = new Array(vertexCount).fill().map(u => new TCoordinate4());
+      this.face = new Array(faceCount).fill().map(u => new TriangularFace());
+      glProgramFrom('/shaders/agoston.vert', '/shaders/agoston.frag')
         .then((program) => {
           this.program = program;
-          this.material = {
-            ambientLoc: gl.getUniformLocation(this.program, 'u_material.ambient'),
-            diffuseLoc: gl.getUniformLocation(this.program, 'u.material.diffuse'),
-            specularLoc: gl.getUniformLocation(this.program, 'u_material.specular'),
-            shininessLoc: gl.getUniformLocation(this.program, 'u_material.shininess')
+          this.frontMaterial = {
+            ambientLoc: gl.getUniformLocation(this.program, 'front_material.ambient'),
+            diffuseLoc: gl.getUniformLocation(this.program, 'front_material.diffuse'),
+            specularLoc: gl.getUniformLocation(this.program, 'front_material.specular'),
+            emissionLoc: gl.getUniformLocation(this.program, 'front_material.emission'),
+            shininessLoc: gl.getUniformLocation(this.program, 'front_material.shininess')
+          }
+
+          this.backMaterial = {
+            ambientLoc: gl.getUniformLocation(this.program, 'back_material.ambient'),
+            diffuseLoc: gl.getUniformLocation(this.program, 'back_material.diffuse'),
+            specularLoc: gl.getUniformLocation(this.program, 'back_material.specular'),
+            emissionLoc: gl.getUniformLocation(this.program, 'back_material.emission'),
+            shininessLoc: gl.getUniformLocation(this.program, 'back_material.shininess')
           }
 
           this.light = {
-            positionLoc: gl.getUniformLocation(this.program, 'u_light.position'),
-            ambientLoc: gl.getUniformLocation(this.program, 'u_light.ambient'),
-            diffuseLoc: gl.getUniformLocation(this.program, 'u_light.diffuse'),
-            specularLoc: gl.getUniformLocation(this.program, 'u_light.specular'),
+            positionLoc: gl.getUniformLocation(this.program, 'light_source.position'),
+            ambientLoc: gl.getUniformLocation(this.program, 'light_source.ambient'),
+            diffuseLoc: gl.getUniformLocation(this.program, 'light_source.diffuse'),
+            specularLoc: gl.getUniformLocation(this.program, 'light_source.specular'),
+            halfVectorLoc: gl.getUniformLocation(this.program, 'light_source.half_vector'),
           }
 
           this.modelLocation = gl.getUniformLocation(this.program, 'u_model');
           this.viewLocation = gl.getUniformLocation(this.program, 'u_view');
           this.projectionLocation = gl.getUniformLocation(this.program, 'u_projection');
-          this.viewPosLocation = gl.getUniformLocation(this.program, 'u_view_pos');
 
-          this.vertexLocation = gl.getAttribLocation(this.program, 'in_vert');
-          this.normalLocation = gl.getAttribLocation(this.program, 'in_norm');
+          this.vertexLocation = gl.getAttribLocation(this.program, 'position');
+          this.normalLocation = gl.getAttribLocation(this.program, 'normal');
 
           glProgramFrom('/shaders/vert_light.glsl', '/shaders/frag_light.glsl')
             .then((lightProg) => {
@@ -135,7 +143,6 @@ class TriangulatedMesh3 {
       }
 
       const floatVerticesArray = new Float32Array(this.vertex.map(dcoordiante => [dcoordiante.x, dcoordiante.y, dcoordiante.z]).flat());
-      console.log(floatVerticesArray);
       gl.bindBuffer(GL.ARRAY_BUFFER, this.vboVertices);
       gl.bufferData(GL.ARRAY_BUFFER, floatVerticesArray, this.usageFlag);
 
@@ -180,18 +187,22 @@ class TriangulatedMesh3 {
 
       gl.useProgram(this.program);
 
-      const lightColor = new DCoordinate3(1.0, 1.0, 1.0);
-      const diffuseColor = lightColor.multiply(0.7);
-      const ambientColor = diffuseColor.multiply(0.5);
 
-      gl.uniform3fv(this.light.ambientLoc, ambientColor.data);
-      gl.uniform3fv(this.light.diffuseLoc, diffuseColor.data);
-      gl.uniform3fv(this.light.specularLoc, new Float32Array([1.0, 1.0, 1.0]));
+      gl.uniform4fv(this.light.ambientLoc, [0.4, 0.4, 0.4, 1.0]);
+      gl.uniform4fv(this.light.diffuseLoc, [0.8, 0.8, 0.8, 1.0]);
+      gl.uniform4fv(this.light.specularLoc, [1.0, 1.0, 1.0, 1.0]);
 
-      gl.uniform3fv(this.material.ambientLoc, this.currMaterial.ambient);
-      gl.uniform3fv(this.material.diffuseLoc, this.currMaterial.diffuse);
-      gl.uniform3fv(this.material.specularLoc, this.currMaterial.specular);
-      gl.uniform1f(this.material.shininessLoc, this.currMaterial.shininess);
+      gl.uniform4fv(this.frontMaterial.ambientLoc, this.currMaterial.frontAmbient.data);
+      gl.uniform4fv(this.frontMaterial.diffuseLoc, this.currMaterial.frontDiffuse.data);
+      gl.uniform4fv(this.frontMaterial.specularLoc, this.currMaterial.frontSpecular.data);
+      gl.uniform4fv(this.frontMaterial.emissionLoc, this.currMaterial.frontEmissive.data);
+      gl.uniform1f(this.frontMaterial.shininessLoc, this.currMaterial.frontShininess);
+
+      gl.uniform4fv(this.backMaterial.ambientLoc, this.currMaterial.backAmbient.data);
+      gl.uniform4fv(this.backMaterial.diffuseLoc, this.currMaterial.backDiffuse.data);
+      gl.uniform4fv(this.backMaterial.specularLoc, this.currMaterial.backSpecular.data);
+      gl.uniform4fv(this.backMaterial.emissionLoc, this.currMaterial.backEmissive.data);
+      gl.uniform1f(this.backMaterial.shininessLoc, this.currMaterial.backShininess);
 
 
       const cameraPos = [cos(0) * scaleValue, sin(0) * scaleValue, scaleValue];
@@ -209,6 +220,14 @@ class TriangulatedMesh3 {
         0, 0, 0, 1
       ];
 
+      let position = new HCoordinate3(0, 0, 1);
+      let halfVector = new DCoordinate3(0, 0, 1).add(new DCoordinate3(...cameraPos).normalize());
+      halfVector.normalize();
+      halfVector = new HCoordinate3(...halfVector.data);
+
+      gl.uniform4fv(this.light.positionLoc, position.data);
+      gl.uniform4fv(this.light.halfVectorLoc, halfVector.data);
+
       model = xRotate(model, degToRad(this.currentXRotate));
       model = yRotate(model, degToRad(this.currentYRotate));
       model = zRotate(model, degToRad(this.currentZRotate));
@@ -217,8 +236,7 @@ class TriangulatedMesh3 {
       gl.uniformMatrix4fv(this.viewLocation, false, lookat);
       gl.uniformMatrix4fv(this.modelLocation, false, model);
 
-      gl.uniform3fv(this.viewPosLocation, cameraPos);
-      gl.uniform3fv(this.light.positionLoc, [cos(time / 100) * (scaleValue - 1), sin(time / 100) * (scaleValue - 1), (scaleValue - 1)]);
+      // gl.uniform3fv(this.light.positionLoc, [cos(time / 100) * (scaleValue - 1), sin(time / 100) * (scaleValue - 1), (scaleValue - 1)]);
 
       gl.enableVertexAttribArray(this.vertexLocation);
       gl.enableVertexAttribArray(this.normalLocation);
@@ -238,21 +256,21 @@ class TriangulatedMesh3 {
       gl.disableVertexAttribArray(this.vertexLocation);
       gl.disableVertexAttribArray(this.normalLocation);
 
-      gl.useProgram(this.lightProg);
-      gl.uniformMatrix4fv(this.lightProjectionLocation, false, proj);
-      gl.uniformMatrix4fv(this.lightViewLocation, false, lookat);
-      let lightModel = [1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1
-      ];
-      lightModel = translate(lightModel, cos(time / 100) * (scaleValue - 1), sin(time / 100) * (scaleValue - 1), (scaleValue - 1));
-      lightModel = scale(lightModel, 0.05, 0.05, 0.05);
-      gl.uniformMatrix4fv(this.lightModelLocation, false, lightModel);
-      gl.enableVertexAttribArray(this.lightVertexLocation);
-      gl.bindBuffer(gl.ARRAY_BUFFER, this.lightVbo);
-      gl.vertexAttribPointer(this.lightVertexLocation, 3, gl.FLOAT, false, 0, 0);
-      gl.drawArrays(gl.TRIANGLES, 0, 36);
+      // gl.useProgram(this.lightProg);
+      // gl.uniformMatrix4fv(this.lightProjectionLocation, false, proj);
+      // gl.uniformMatrix4fv(this.lightViewLocation, false, lookat);
+      // let lightModel = [1, 0, 0, 0,
+      //   0, 1, 0, 0,
+      //   0, 0, 1, 0,
+      //   0, 0, 0, 1
+      // ];
+      // lightModel = translate(lightModel, cos(time / 100) * (scaleValue - 1), sin(time / 100) * (scaleValue - 1), (scaleValue - 1));
+      // lightModel = scale(lightModel, 0.05, 0.05, 0.05);
+      // gl.uniformMatrix4fv(this.lightModelLocation, false, lightModel);
+      // gl.enableVertexAttribArray(this.lightVertexLocation);
+      // gl.bindBuffer(gl.ARRAY_BUFFER, this.lightVbo);
+      // gl.vertexAttribPointer(this.lightVertexLocation, 3, gl.FLOAT, false, 0, 0);
+      // gl.drawArrays(gl.TRIANGLES, 0, 36);
 
       return true;
     }
@@ -273,8 +291,6 @@ class TriangulatedMesh3 {
     const fileContents = await fileResponse.text();
 
     const lines = fileContents.split('\n').filter(line => line.length !== 0).filter(line => !line.startsWith('#'));
-    console.log(lines.length);
-
     // if (lines[0] !== 'OFF') {
     //   console.log(lines[0].localeCompare('OFFs'));
     //   return false;
@@ -282,10 +298,10 @@ class TriangulatedMesh3 {
 
     let [vertexCount, faceCount, edgeCount] = lines[1].split(' ').map(n => parseInt(n, 10));
 
-    this.vertex = new Array(vertexCount).fill(new DCoordinate3());
-    this.normal = new Array(vertexCount).fill(new DCoordinate3());
-    this.tex = new Array(vertexCount).fill(new TCoordinate4);
-    this.face = new Array(faceCount).fill(new TriangularFace());
+    this.vertex = new Array(vertexCount).fill().map(u => new DCoordinate3());
+    this.normal = new Array(vertexCount).fill().map(u => new DCoordinate3());
+    this.tex = new Array(vertexCount).fill().map(u => new TCoordinate4());
+    this.face = new Array(faceCount).fill().map(u => new TriangularFace());
 
     this.leftMostVertex.data = new Float32Array([99999, 99999, 99999]);
     this.rightMostVertex.data = new Float32Array([-99999, -99999, -99999]);

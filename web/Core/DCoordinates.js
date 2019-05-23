@@ -67,8 +67,6 @@ class DCoordinate3 {
                 this.data[0] * rhs.data[1] - this.data[1] * rhs.data[0]
             );
         }
-
-        return this;
     }
 
     multiply(rhs) {
