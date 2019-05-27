@@ -1,6 +1,12 @@
 class ColumnMatrix extends Matrix {
-    constructor(rowCount) {
+    constructor(rowCount, constructor) {
         super(rowCount, 1);
+
+        if (constructor) {
+            for (let i = 0; i < this.rowCount; ++i) {
+                this.data[i] = [new constructor()];
+            }
+        }
     }
 
     at(row) {

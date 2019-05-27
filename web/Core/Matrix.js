@@ -44,11 +44,11 @@ class Matrix {
     this.data[row][column] = value;
   }
 
-  resizeRows(rowCount) {
+  resizeRows(rowCount, constructor) {
     if (this.rowCount < rowCount) {
       for (let i = this.rowCount; i < rowCount; ++i) {
-        if (defaultValueConstructor) {
-          this.data.push(new Array(this.columnCount).fill(new this.defaultValueConstructor(this.defaultValue)));
+        if (constructor) {
+          this.data.push(new Array(this.columnCount).fill().map(e => new constructor()));
         } else {
           this.data.push(new Array(this.columnCount).fill(this.defaultValue));
         }

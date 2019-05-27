@@ -50,7 +50,7 @@ class GenericCurve3 {
             globalThis.gl.drawArrays(renderMode, 0, pointCount)
         } else {
             if (renderMode !== WebGLRenderingContext.LINES && renderMode !== WebGLRenderingContext.POINTS) {
-                globalThis.gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, 0);
+                globalThis.gl.bindBuffer(WebGLRenderingContext.ARRAY_BUFFER, null);
                 return false;
             }
 
@@ -98,7 +98,7 @@ class GenericCurve3 {
 
             for (let i = 0; i < curvePointSize; ++i) {
                 let sum = this.derivative.at(0, i);
-                sum = sum.add(this.derivative.at(d, i));
+                sum = sum.add(this.derivative.at(d, i).multiply(0.3));
 
                 for (let j = 0; j < 3; ++j) {
                     array[coordinate] = this.derivative.at(0, i).data[j];

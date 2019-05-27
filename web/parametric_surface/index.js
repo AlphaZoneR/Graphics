@@ -61,7 +61,7 @@ window.addEventListener('load', async (event) => {
 function drawFrame() {
   globalThis.gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-  globalThis.gl.clearColor(0.05, 0.05, 0.05, 1);
+  globalThis.gl.clearColor(0.00, 0.00, 0.00, 1);
   globalThis.gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   globalThis.mesh.render(globalThis.gl.TRIANGLES);

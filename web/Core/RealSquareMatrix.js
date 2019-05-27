@@ -17,7 +17,9 @@ class RealSquareMatrix extends Matrix {
     solveLinearSystem(b, x, representSolutionsAsColumns) {
         if (b instanceof Matrix && x instanceof Matrix) {
             if (!this.luDecompIsDone) {
+                console.log('Lu decomp has not yet been done! Trying now..');
                 if (!this.performLUDecomp()) {
+                    console.log('Cannot perform LU decomp');
                     return false;
                 }
             }
@@ -63,6 +65,8 @@ class RealSquareMatrix extends Matrix {
                 const size = this.rowCount;
 
                 if (size !== b.columnCount) {
+                    console.log(this.rowCount, b.rowCount)
+                    console.log('Size error size !== b.columnCount');
                     return false;
                 }
 
