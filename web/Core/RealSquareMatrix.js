@@ -14,7 +14,7 @@ class RealSquareMatrix extends Matrix {
     }
 
 
-    solveLinearSystem(b, x, representSolutionsAsColumns) {
+    solveLinearSystem(b, x, representSolutionsAsColumns=true) {
         if (b instanceof Matrix && x instanceof Matrix) {
             if (!this.luDecompIsDone) {
                 console.log('Lu decomp has not yet been done! Trying now..');
@@ -30,7 +30,7 @@ class RealSquareMatrix extends Matrix {
                 if (b.rowCount !== size) {
                     return false;
                 }
-
+                
                 x = b;
 
                 for (let k = 0; k < b.columnCount; ++k) {
@@ -38,7 +38,7 @@ class RealSquareMatrix extends Matrix {
                     for (let i = 0; i < size; ++i) {
                         let ip = this.rowPermuation[i];
                         let sum = x.at(ip, k);
-                        x.set(ip, k, x.at(i, k));
+                        x.set(ip, k, _.cloneDeep(x.at(i, k)));
 
                         if (ii !== 0) {
                             for (let j = ii - 1; j < i; ++j) {
@@ -65,12 +65,11 @@ class RealSquareMatrix extends Matrix {
                 const size = this.rowCount;
 
                 if (size !== b.columnCount) {
-                    console.log(this.rowCount, b.rowCount)
                     console.log('Size error size !== b.columnCount');
                     return false;
                 }
 
-                x = b;
+                x = _.cloneDeep(b);
 
                 for (let k = 0; k < b.rowCount; ++k) {
                     let ii = 0;

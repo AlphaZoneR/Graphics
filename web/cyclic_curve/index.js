@@ -76,7 +76,7 @@ window.addEventListener('load', async (event) => {
   cyclicCurveImage.updateVertexBufferObjects(gl.STATIC_DRAW);
   let cyclicInterpolatedImage = null;
 
-  let curvePointsToInterpolate = new ColumnMatrix(6 + 1);
+  let curvePointsToInterpolate = new ColumnMatrix(7, DCoordinate3);
 
   for (let i = 0; i < 6 + 1; ++i) {
     curvePointsToInterpolate.set(i, cyclicCurve.at(i));
@@ -87,8 +87,6 @@ window.addEventListener('load', async (event) => {
   for (let i = 0; i < 6 + 1; ++i) {
     knotVector.set(i, 2 * Math.PI * (i / 7));
   }
-
-  console.log(knotVector, curvePointsToInterpolate);
 
   if (cyclicCurve.updateDataForInterpolation(knotVector, curvePointsToInterpolate)) {
     cyclicInterpolatedImage = cyclicCurve.generateImage(0, 200);

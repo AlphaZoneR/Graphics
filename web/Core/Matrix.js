@@ -30,7 +30,7 @@ class Matrix {
         this.data[i] = new Array(this.columnCount);
 
         for (let j = 0; j < this.columnCount; ++j) {
-          this.data[i][j] = mat.data[i][j];
+          this.data[i][j] = _.cloneDeep(mat.data[i][j]);
         }
       }
     }

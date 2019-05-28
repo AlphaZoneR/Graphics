@@ -124,9 +124,8 @@ class LinearCombination3 {
 
     const collocationMatrix = new RealSquareMatrix(dataCount);
     const currentBlendingFunctionValues = new RowMatrix(dataCount);
-    
+
     knotVector.forEach((value) => {
-      console.log(value);
       if (!this.blendingFunctionValues(value, currentBlendingFunctionValues)) {
         return false;
       }
