@@ -94,10 +94,27 @@ window.addEventListener('load', (event) => {
     currentCurve(event1.target.value);
   });
 
-  document.addEventListener('wheel', preventDefault, { passive: false }); // Disable scrolling in Chrome
-  window.onwheel = preventDefault; // modern standard
-  window.onmousewheel = document.onmousewheel = preventDefault; // older browsers, IE
-  window.ontouchmove = preventDefault; // mobile
+  document.addEventListener('wheel', (event1) => {
+    event1.stopImmediatePropagation();
+    scaleValue += Math.sign(event1.deltaY) * 1;
+    document.getElementById('scale-slider').value = parseInt(scaleValue * 100);
+  }, { passive: false }); // Disable scrolling in Chrome
+  window.onwheel = (event1) => {
+    event1.stopImmediatePropagation();
+    scaleValue += Math.sign(event1.deltaY) * 1;
+    document.getElementById('scale-slider').value = parseInt(scaleValue * 100);
+  }; // modern standard
+  window.onmousewheel = document.onmousewheel = (event1) => {
+    event1.stopImmediatePropagation();
+    scaleValue += Math.sign(event1.deltaY) * 1;
+    document.getElementById('scale-slider').value = parseInt(scaleValue * 100);
+  }; // older browsers, IE
+  window.addEventListener('gestureend', (event1) => {
+    event1.stopImmediatePropagation();
+    alert('hello');
+    scaleValue = scaleValue * event1.scale;
+    document.getElementById('scale-slider').value = parseInt(scaleValue * 100);
+  }); // mobile
 });
 
 async function currentCurve(name) {
