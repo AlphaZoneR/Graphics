@@ -124,15 +124,16 @@ class LinearCombination3 {
 
     const collocationMatrix = new RealSquareMatrix(dataCount);
     const currentBlendingFunctionValues = new RowMatrix(dataCount);
-
-    knotVector.forEach((value, index) => {
+    
+    knotVector.forEach((value) => {
+      console.log(value);
       if (!this.blendingFunctionValues(value, currentBlendingFunctionValues)) {
         return false;
       }
 
       collocationMatrix.data[r] = new Array(currentBlendingFunctionValues.data[0]);
     });
-
+  
     return collocationMatrix.solveLinearSystem(dataPointsToInterpolate, this.data)
   }
 

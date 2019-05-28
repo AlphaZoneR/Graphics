@@ -40,17 +40,18 @@ window.addEventListener('load', async (event) => {
 
   document.querySelector('body').appendChild(canvas);
 
-  var ext = gl.getExtension('OES_element_index_uint');
+  var ext1 = gl.getExtension('OES_element_index_uint');
+  var ext2 = gl.getExtension('OES_standard_derivatives');
 
   canvas.width = canvas.clientWidth;
   canvas.height = canvas.clientHeight;
 
   let pd = new TriangularMatrix(2);
-  pd.set(0, 0, secondSurface.d00);
-  pd.set(1, 0, secondSurface.d10);
-  pd.set(1, 1, secondSurface.d01);
+  pd.set(0, 0, fifthSurface.d00);
+  pd.set(1, 0, fifthSurface.d10);
+  pd.set(1, 1, fifthSurface.d01);
 
-  const surface = new ParametricSurface3(pd, secondSurface.uMin, secondSurface.uMax, secondSurface.vMin, fourthSurface.vMax);
+  const surface = new ParametricSurface3(pd, fifthSurface.uMin, fifthSurface.uMax, fifthSurface.vMin, fifthSurface.vMax);
   globalThis.mesh = surface.generateImage(200, 200, gl.STATIC_DRAW);
   globalThis.mesh.updateVertexBufferObjects(gl.STATIC_DRAW);
   gl.enable(gl.DEPTH_TEST);

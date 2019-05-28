@@ -1,20 +1,13 @@
+#version 100
+#extension GL_OES_standard_derivatives : enable
 precision highp float;
+
 varying vec3 interpolated_eye_position;
 varying vec3 interpolated_normal;
 
-uniform float  transparency;
-
-struct Material
-{
-    vec4    ambient;
-    vec4    diffuse;
-    vec4    specular;
-    vec4    emission;
-    float   shininess;
-};
-
-uniform Material front_material;
-uniform Material back_material;
+float scale_factor = 4.0;
+float smoothing = 2.0;
+float shading = 1.0;
 
 struct LightSource
 {
@@ -26,10 +19,6 @@ struct LightSource
 };
 
 uniform LightSource light_source;
-
-float scale_factor = 1.0;
-float smoothing = 0.5;
-float shading = 0.5;
 
 float arcSinus(float x)
 {
@@ -50,9 +39,11 @@ void main (void)
     reflection_vector.xy  = (reflection_vector.xy * reflection_vector.z) + 0.5;
     reflection_vector     *= 2.0;
 
-    float sharpness = 1.0/arcSinus(smoothing * 3.0 * 2.0 * scale_factor);
+    float sharpness = 1.0 / asin(smoothing * fwidth(reflection_vector.x) * 2.0 * scale_factor);
 
     color = vec4(clamp(0.5 + sharpness * sin(2.0 * 3.1428 * reflection_vector.x*scale_factor), 0.0, 1.0));
 
-    gl_FragColor = (clamp(dot(light_source.position.xyz, n)*shading + (1.0-shading), 0.0, 1.0) * min(color, vec4(1.0,1.0,1.0,1.0)));
+    color = (clamp(dot(vec3(light_source.position), n)*shading + (1.0-shading), 0.0, 1.0) * min(color, vec4(1.0,1.0,1.0,1.0)));
+
+    gl_FragColor = vec4(color.rgb, 1.0);
 }

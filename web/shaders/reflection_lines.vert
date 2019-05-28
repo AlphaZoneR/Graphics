@@ -1,6 +1,7 @@
 uniform mat4 u_model;
 uniform mat4 u_view;
 uniform mat4 u_projection;
+uniform vec3 u_eye_position;
 
 attribute vec3 position;   // attributes
 attribute vec3 normal;
@@ -61,8 +62,12 @@ void main(void)
     mat4 VM = u_view * u_model; // product of view and model matrices
     mat4 PVM = u_projection * u_view * u_model; // product of projection, view and model matrices
     mat4 N = transpose(inverse(VM)); // normal matrix, i.e., transposed inverse of VM
-    
-    interpolated_normal = normalize(vec3(N * vec4(normal, 0.0)));
+
+    interpolated_normal   = normalize(vec3(N * vec4(normal, 0.0)));
+   
+    // transform the vertex position to the eye space
     interpolated_eye_position = vec3(VM * vec4(position, 1.0));
-    gl_Position = PVM * vec4(position, 1.0);
+       
+    // convert the given vertex to clip coordinates and pass along
+    gl_Position           = PVM * vec4(position, 1.0);
 }

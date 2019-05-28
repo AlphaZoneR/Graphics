@@ -79,7 +79,7 @@ window.addEventListener('load', async (event) => {
   let curvePointsToInterpolate = new ColumnMatrix(6 + 1);
 
   for (let i = 0; i < 6 + 1; ++i) {
-    curvePointsToInterpolate.set(i, _.cloneDeep(cyclicCurve.at(i)));
+    curvePointsToInterpolate.set(i, cyclicCurve.at(i));
   }
 
   let knotVector = new ColumnMatrix(6 + 1);
@@ -87,6 +87,8 @@ window.addEventListener('load', async (event) => {
   for (let i = 0; i < 6 + 1; ++i) {
     knotVector.set(i, 2 * Math.PI * (i / 7));
   }
+
+  console.log(knotVector, curvePointsToInterpolate);
 
   if (cyclicCurve.updateDataForInterpolation(knotVector, curvePointsToInterpolate)) {
     cyclicInterpolatedImage = cyclicCurve.generateImage(0, 200);

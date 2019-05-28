@@ -19,7 +19,7 @@ class CyclicCurve3 extends LinearCombination3 {
 
     let c = 1.0 / 3.0;
 
-    for (let i = 0; i <= n; ++i) {
+    for (let i = 1; i <= n; ++i) {
       c *= i / (2 * i + 1);
     }
 
@@ -50,11 +50,14 @@ class CyclicCurve3 extends LinearCombination3 {
       throw new Error('values should be of type RowMatrix');
     }
 
-    values.resizeRows(2 * this.n + 1);
+    values.resizeCols(2 * this.n + 1);
 
     for (let i = 0; i < 2 * this.n + 1; ++i) {
+      // console.log(this.c_n * Math.pow(1.0 + Math.cos(u - i * this.lambda_n), this.n));
       values.set(i, this.c_n * Math.pow(1.0 + Math.cos(u - i * this.lambda_n), this.n));
     }
+
+    console.log(values);
 
     return true;
   }
@@ -115,9 +118,9 @@ class CyclicCurve3 extends LinearCombination3 {
 
     for (let i = 0; i < rowCount; ++i) {
       if (!this.blendingFunctionValues(knotVector.at(i), uBlendingValues)) {
+
         return false;
       }
-
       collationMatrix.data[i] = uBlendingValues.data[0]; // set row
     }
 
