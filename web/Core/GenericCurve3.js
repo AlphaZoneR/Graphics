@@ -91,7 +91,7 @@ class GenericCurve3 {
 
         const higherOrderDerivativeSize = 2 * curvePointSize;
 
-        for (let d = 1; d < this.derivative.rowCount; ++d) {
+        for (let d = 1; d < this.derivative.rowCount - 1; ++d) {
             const array = new Float32Array(higherOrderDerivativeSize * 3);
 
             let coordinate = 0;

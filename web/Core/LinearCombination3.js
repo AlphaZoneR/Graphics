@@ -152,12 +152,12 @@ class LinearCombination3 {
       if (!this.calculateDerivatives(maxOrderOfDerivatives, this.uMin, derivatives)) {
         return null;
       }
-      result.setDerivative(order, 0, _.cloneDeep(derivatives.at(order)));
+      result.derivative.data[order][0] = _.cloneDeep(derivatives.at(order));
 
       if (!this.calculateDerivatives(maxOrderOfDerivatives, this.uMax, derivatives)) {
         return null;
       }
-      result.setDerivative(order, divPointCount - 1, _.cloneDeep(derivatives.at(order)));
+      result.derivative.data[order][divPointCount - 1] = _.cloneDeep(derivatives.at(order));
     }
 
 
@@ -171,8 +171,8 @@ class LinearCombination3 {
         if (!this.calculateDerivatives(maxOrderOfDerivatives, u, derivatives)) {
           return null;
         }
-
-        result.setDerivative(order, i, _.cloneDeep(derivatives.at(order)));
+       
+        result.derivative.data[order][i] = _.cloneDeep(derivatives.at(order));
       }
     }
     return result;

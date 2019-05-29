@@ -9,6 +9,9 @@ let translateX = 0;
 let translateY = 0;
 let translateZ = 0;
 
+let patch = null;
+let beforeInterpolation = null;
+let afterInterpolation = null;
 let showd1 = true;
 let showd2 = true;
 
@@ -42,6 +45,9 @@ window.addEventListener('load', async (event) => {
   });
 
   document.querySelector('body').appendChild(canvas);
+  
+  var ext1 = gl.getExtension('OES_element_index_uint');
+  var ext2 = gl.getExtension('OES_standard_derivatives');
 
   prog = await glProgramFrom('vert.glsl', 'frag.glsl').catch(error => console.log(error.message));
 
@@ -52,54 +58,64 @@ window.addEventListener('load', async (event) => {
   canvas.width = canvas.clientWidth;
   canvas.height = canvas.clientHeight;
 
-  const derivative = new RowMatrix(3);
-  derivative.set(0, simple5.d0);
-  derivative.set(1, simple5.d1);
-  derivative.set(2, simple5.d2);
+  patch = new BiquarticPatch3();
+  patch.setData(0, 0, -2.0, -2.0, 0.0);
 
-  globalThis.parametricCurve = new ParametricCurve3(derivative, simple5.uMin, simple5.uMax);
+  patch.setData(0, 0, -2.0, -2.0, 0.0);
+  patch.setData(0, 1, -2.0, -1.0, 0.0);
+  patch.setData(0, 2, -2.0, 1.0, 0.0);
+  patch.setData(0, 3, -2.0, 2.0, 0.0);
+  patch.setData(1, 0, -1.0, -2.0, 0.0);
+  patch.setData(1, 1, -1.0, -1.0, 2.0);
+  patch.setData(1, 2, -1.0, 1.0, 2.0);
+  patch.setData(1, 3, -1.0, 2.0, 0.0);
+  patch.setData(2, 0, 1.0, -2.0, 0.0);
+  patch.setData(2, 1, 1.0, -1.0, 2.0);
+  patch.setData(2, 2, 1.0, 1.0, 2.0);
+  patch.setData(2, 3, 1.0, 2.0, 0.0);
+  patch.setData(3, 0, 2.0, -2.0, 0.0);
+  patch.setData(3, 1, 2.0, -1.0, 0.0);
+  patch.setData(3, 2, 2.0, 1.0, 0.0);
+  patch.setData(3, 3, 2.0, 2.0, 0.0);
 
-  let cyclicCurve = new CyclicCurve3(3);
-  cyclicCurve.set(0, new DCoordinate3(0, 1, 0));
-  cyclicCurve.set(1, new DCoordinate3(0, 0.5, 0.5 * Math.sqrt(3)));
-  cyclicCurve.set(2, new DCoordinate3(0, -0.5, 0.5 * Math.sqrt(3)));
-  cyclicCurve.set(3, new DCoordinate3(0, -1, 0));
-  cyclicCurve.set(4, new DCoordinate3(1, -0.5, -0.5 * Math.sqrt(3)));
-  cyclicCurve.set(5, new DCoordinate3(1, 0.5, -0.5 * Math.sqrt(3)));
-  cyclicCurve.set(6, cyclicCurve.at(0));
+  patch.updateVertexBufferObjectsOfData();
 
-  cyclicCurve.updateVertexBufferObjectsOfData();
+  uisolines = patch.generateUIsoparametricLines(10, 1, 200);
+  uisolines.data[0].forEach(line => {
+    line.updateVertexBufferObjects(gl.STATIC_DRAW);
+  });
+  beforeInterpolation = patch.generateImage(30, 30);
+  beforeInterpolation.updateVertexBufferObjects(gl.STATIC_DRAW);
 
-  globalThis.cyclicCurve = cyclicCurve;
+  const uKnotVector = new RowMatrix(4);
+  uKnotVector.set(0, 0.0);
+  uKnotVector.set(1, 1.0 / 3.0);
+  uKnotVector.set(2, 2.0 / 3.0);
+  uKnotVector.set(3, 1.0);
 
-  let cyclicCurveImage = cyclicCurve.generateImage(2, 500);
-  cyclicCurveImage.updateVertexBufferObjects(gl.STATIC_DRAW);
-  let cyclicInterpolatedImage = null;
+  const vKnotVector = new ColumnMatrix(4);
+  vKnotVector.set(0, 0.0);
+  vKnotVector.set(1, 1.0 / 3.0);
+  vKnotVector.set(2, 2.0 / 3.0);
+  vKnotVector.set(3, 1.0);
 
-  let curvePointsToInterpolate = new ColumnMatrix(7, DCoordinate3);
-
-  for (let i = 0; i < 6 + 1; ++i) {
-    curvePointsToInterpolate.set(i, cyclicCurve.at(i));
-  }
-
-  let knotVector = new ColumnMatrix(6 + 1);
-
-  for (let i = 0; i < 6 + 1; ++i) {
-    knotVector.set(i, 2 * Math.PI * (i / 7));
-  }
-
-  if (cyclicCurve.updateDataForInterpolation(knotVector, curvePointsToInterpolate)) {
-    cyclicInterpolatedImage = cyclicCurve.generateImage(0, 200);
-    if (cyclicInterpolatedImage) {
-      cyclicInterpolatedImage.updateVertexBufferObjects(gl.STATIC_DRAW);
+  const dataPointstoInterpolate = new Matrix(4, 4);
+  for (let row = 0; row < 4; ++row) {
+    for (let col = 0; col < 4; ++col) {
+      dataPointstoInterpolate.data[row][col] = _.cloneDeep(patch.data.data[row][col]);
     }
   }
 
-  globalThis.genericCurve = cyclicCurveImage;
-  globalThis.cyclicInterpolatedImage = cyclicInterpolatedImage;
+  if (patch.updateDataForInterpolation(uKnotVector, vKnotVector, dataPointstoInterpolate)) {
+    afterInterpolation = patch.generateImage(200, 200);
+
+    if (afterInterpolation) {
+      afterInterpolation.updateVertexBufferObjects(gl.STATIC_DRAW);
+    }
+  }
 
   gl.enable(gl.DEPTH_TEST);
-  gl.enable(gl.CULL_FACE);
+  // gl.enable(gl.CULL_FACE);
   gl.enable(gl.BLEND);
 
   drawFrame();
@@ -108,10 +124,15 @@ window.addEventListener('load', async (event) => {
 function drawFrame() {
   globalThis.gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
 
-  globalThis.gl.clearColor(0.0, 0.0, 0.0, 1);
+  globalThis.gl.clearColor(0.2, 0.2, 0.2, 1);
   globalThis.gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  const cameraPos = [cos(time / 100) * scaleValue, sin(time / 100) * scaleValue, sin(time / 100) * scaleValue];
+
+
+  // if (afterInterpolation) {
+  //   afterInterpolation.render(gl.TRIANGLES);
+  // }
+  const cameraPos = [cos(time / 100) * scaleValue, sin(time / 100) * scaleValue,  scaleValue];
   let proj = perspective(degToRad(45.0), gl.canvas.width / gl.canvas.height, 1.0, 1000.0);
 
   const lookat = inverse(lookAt(
@@ -125,30 +146,16 @@ function drawFrame() {
   globalThis.gl.useProgram(prog);
   globalThis.gl.uniformMatrix4fv(matrixLocation, false, multiply(proj, lookat))
   globalThis.gl.enableVertexAttribArray(globalThis.positionAttributeLocation);
+  
+  uisolines.data[0].forEach(line => {
+    line.renderDerivatives(0, gl.LINE_STRIP);
+  });
 
-  if (showd1) {
-    gl.uniform4fv(colorLocation, new Float32Array([0.0, 0.5, 0.0, 1.0]));
-    globalThis.genericCurve.renderDerivatives(1, gl.LINES);
-  }
+  beforeInterpolation.render(gl.TRIANGLES);
 
-  if (showd2) {
-    gl.uniform4fv(colorLocation, new Float32Array([1.0, 0.3, 0.3, 1.0]));
-    globalThis.genericCurve.renderDerivatives(2, gl.LINES);
-  }
-
-  gl.uniform4fv(colorLocation, new Float32Array([1.0, 1.0, 1.0, 1.0]));
-  globalThis.genericCurve.renderDerivatives(0, gl.LINE_STRIP);
-
-  if (globalThis.cyclicInterpolatedImage) {
-    gl.uniform4fv(colorLocation, new Float32Array([0.0, 0.5, 0.5, 1.0]));
-    globalThis.cyclicInterpolatedImage.renderDerivatives(0, gl.LINE_STRIP);
-  }
+  patch.renderData(gl.LINE_STRIP);
 
   time++;
-
-  globalThis.cyclicCurve.renderData(gl.LINE_STRIP);
-  globalThis.cyclicCurve.renderData(gl.POINTS);
-
   setTimeout(drawFrame, 1000 / 60);
 }
 

@@ -21,7 +21,6 @@ class TriangularMatrix {
             return true;
         }
         const diff = rowCount - this.rowCount;
-        console.log(this.rowCount, rowCount, diff);
         if (rowCount > this.rowCount) {
             for (let i = 0; i < diff; ++i) {
                 this.data.push(new Array(this.rowCount + 1).fill().map(e => 0));

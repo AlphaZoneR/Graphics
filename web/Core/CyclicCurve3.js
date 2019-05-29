@@ -19,8 +19,8 @@ class CyclicCurve3 extends LinearCombination3 {
 
     let c = 1.0 / 3.0;
 
-    for (let i = 1; i <= n; ++i) {
-      c *= i / (2 * i + 1);
+    for (let i = 2; i <= n; ++i) {
+      c *= i / (2.0 * i + 1.0);
     }
 
     return c;
@@ -60,6 +60,7 @@ class CyclicCurve3 extends LinearCombination3 {
   }
 
   calculateDerivatives(maxOrderOfDerivatives, u, d) {
+    
     if (arguments.length < 3) {
       throw new Error('Invalid parameters provided!');
     }
@@ -72,11 +73,12 @@ class CyclicCurve3 extends LinearCombination3 {
     d.loadNullVectors();
 
     let centroid = new DCoordinate3();
-    for (let i = 0; i < 2 * this.n; ++i) {
+    for (let i = 0; i <= 2 * this.n; ++i) {
       centroid = centroid.add(this.data.at(i));
     }
 
-    centroid = centroid.divide(2 * this.n + 1);
+    centroid = centroid.divide(2.0 * this.n + 1.0);
+    
 
     for (let r = 0; r <= maxOrderOfDerivatives; ++r) {
       for (let i = 0; i <= 2 * this.n; ++i) {
@@ -85,9 +87,10 @@ class CyclicCurve3 extends LinearCombination3 {
         for (let k = 0; k <= this.n - 1; ++k) {
           sum_k += Math.pow(this.n - k, r) * this.bc.at(2 * this.n, k) * Math.cos((this.n - k) * (u - i * this.lambda_n) + r * Math.PI / 2.0);
         }
+
         d.set(r, d.at(r).add(this.data.at(i).multiply(sum_k)));
       }
-      d.set(r, d.at(r).multiply(2));
+      d.set(r, d.at(r).multiply(2.0));
       d.set(r, d.at(r).divide(2 * this.n + 1));
       d.set(r, d.at(r).divide(this.bc.at(2 * this.n, this.n)));
     }
@@ -115,16 +118,19 @@ class CyclicCurve3 extends LinearCombination3 {
 
     for (let i = 0; i < rowCount; ++i) {
       if (!this.blendingFunctionValues(knotVector.at(i), uBlendingValues)) {
-
         return false;
       }
       collationMatrix.data[i] = _.cloneDeep(uBlendingValues.data[0]); // set row
     }
 
+    // console.log(dataPoints.toString());
+    
+
     if (!collationMatrix.performLUDecomp()) {
       console.log('Collation matrix perform LU decomp failed');
       return false;
     }
+
     if (!collationMatrix.solveLinearSystem(dataPoints, this.data)) {
       console.log('Collation matrix solve linear failed');
       return false;

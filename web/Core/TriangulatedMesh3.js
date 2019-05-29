@@ -159,7 +159,6 @@ class TriangulatedMesh3 {
       gl.bufferData(GL.ARRAY_BUFFER, new Float32Array(cube), this.usageFlag);
 
       const intIndicesArray = new Uint32Array(this.face.map(tface => [tface.data[0], tface.data[1], tface.data[2]]).flat());
-
       gl.bindBuffer(GL.ELEMENT_ARRAY_BUFFER, this.vboIndices);
       gl.bufferData(GL.ELEMENT_ARRAY_BUFFER, intIndicesArray, this.usageFlag);
 
@@ -205,7 +204,7 @@ class TriangulatedMesh3 {
       gl.uniform1f(this.backMaterial.shininessLoc, this.currMaterial.backShininess);
 
 
-      const cameraPos = [cos(0) * scaleValue, sin(0) * scaleValue, scaleValue];
+      const cameraPos = [cos(time / 100) * scaleValue, sin(time / 100) * scaleValue, scaleValue];
       let proj = perspective(degToRad(45.0), gl.canvas.width / gl.canvas.height, 1.0, 1000.0);
 
       const lookat = inverse(lookAt(
