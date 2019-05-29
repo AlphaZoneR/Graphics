@@ -47,7 +47,7 @@ class LinearCombination3 {
       return false;
     }
 
-    const cameraPos = [cos(time / 100) * scaleValue, sin(time / 100) * scaleValue, sin(time / 100) * scaleValue];
+    const cameraPos = [cos(time / 100) * scaleValue, sin(time / 100) * scaleValue, scaleValue];
     let proj = perspective(degToRad(45.0), gl.canvas.width / gl.canvas.height, 1.0, 1000.0);
 
     const lookat = inverse(lookAt(

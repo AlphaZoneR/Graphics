@@ -63,7 +63,6 @@ class ParametricSurface3 {
                 }
             }
         }
-        console.log(result.face);
         return result;
     }
 }

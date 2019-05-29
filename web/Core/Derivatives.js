@@ -12,4 +12,9 @@ class Derivatives extends ColumnMatrix {
             row[0].data[2] = 0.0;
         });
     }
+
+    resizeRows(rows) {
+        super.resizeRows(rows);
+        this.data = this.data.fill().map(e => [new DCoordinate3()]);
+    }
 }

@@ -379,6 +379,8 @@ class TensorProductSurface {
     gl.uniformMatrix4fv(this.matrixLocation, false, multiply(proj, lookat))
     gl.enableVertexAttribArray(this.vertexLocation);
 
+
+    gl.uniform4fv(this.colorLocation, [0.0, 0.0, 0.0, 0.0]);
     gl.bindBuffer(GL.ARRAY_BUFFER, this.vboData);
     gl.vertexAttribPointer(this.vertexLocation, 3, WebGLRenderingContext.FLOAT, true, 0, 0);
 

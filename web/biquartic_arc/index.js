@@ -9,7 +9,7 @@ let translateX = 0;
 let translateY = 0;
 let translateZ = 0;
 
-let patch = null;
+let arc = null;
 let beforeInterpolation = null;
 let afterInterpolation = null;
 let showd1 = true;
@@ -45,7 +45,7 @@ window.addEventListener('load', async (event) => {
   });
 
   document.querySelector('body').appendChild(canvas);
-  
+
   var ext1 = gl.getExtension('OES_element_index_uint');
   var ext2 = gl.getExtension('OES_standard_derivatives');
 
@@ -58,58 +58,17 @@ window.addEventListener('load', async (event) => {
   canvas.width = canvas.clientWidth;
   canvas.height = canvas.clientHeight;
 
-  patch = new BiquarticPatch3();
-  patch.setData(0, 0, -2.0, -2.0, 0.0);
+  arc = new BiquarticArc();
+  arc.set(0, new DCoordinate3(0.0, 0.0, 0.0));
+  arc.set(1, new DCoordinate3(0.0, 1.0, 0.0));
+  arc.set(2, new DCoordinate3(0.0, 1.0, 1.0));
+  arc.set(3, new DCoordinate3(1.0, 1.0, 1.0));
 
-  patch.setData(0, 0, -2.0, -2.0, 0.0);
-  patch.setData(0, 1, -2.0, -1.0, 0.0);
-  patch.setData(0, 2, -2.0, 1.0, 0.0);
-  patch.setData(0, 3, -2.0, 2.0, 0.0);
-  patch.setData(1, 0, -1.0, -2.0, 0.0);
-  patch.setData(1, 1, -1.0, -1.0, 2.0);
-  patch.setData(1, 2, -1.0, 1.0, 2.0);
-  patch.setData(1, 3, -1.0, 2.0, 0.0);
-  patch.setData(2, 0, 1.0, -2.0, 0.0);
-  patch.setData(2, 1, 1.0, -1.0, 2.0);
-  patch.setData(2, 2, 1.0, 1.0, 2.0);
-  patch.setData(2, 3, 1.0, 2.0, 0.0);
-  patch.setData(3, 0, 2.0, -2.0, 0.0);
-  patch.setData(3, 1, 2.0, -1.0, 0.0);
-  patch.setData(3, 2, 2.0, 1.0, 0.0);
-  patch.setData(3, 3, 2.0, 2.0, 0.0);
+  arc.updateVertexBufferObjectsOfData();
 
-  patch.updateVertexBufferObjectsOfData();
-
-  beforeInterpolation = patch.generateImage(30, 30);
+  beforeInterpolation = arc.generateImage(2, 200);
+  console.log(beforeInterpolation);
   beforeInterpolation.updateVertexBufferObjects(gl.STATIC_DRAW);
-
-  const uKnotVector = new RowMatrix(4);
-  uKnotVector.set(0, 0.0);
-  uKnotVector.set(1, 1.0 / 3.0);
-  uKnotVector.set(2, 2.0 / 3.0);
-  uKnotVector.set(3, 1.0);
-
-  const vKnotVector = new ColumnMatrix(4);
-  vKnotVector.set(0, 0.0);
-  vKnotVector.set(1, 1.0 / 3.0);
-  vKnotVector.set(2, 2.0 / 3.0);
-  vKnotVector.set(3, 1.0);
-
-  const dataPointstoInterpolate = new Matrix(4, 4);
-  for (let row = 0; row < 4; ++row) {
-    for (let col = 0; col < 4; ++col) {
-      dataPointstoInterpolate.data[row][col] = _.cloneDeep(patch.data.data[row][col]);
-    }
-  }
-
-  if (patch.updateDataForInterpolation(uKnotVector, vKnotVector, dataPointstoInterpolate)) {
-    afterInterpolation = patch.generateImage(30, 30);
-
-    if (afterInterpolation) {
-      afterInterpolation.updateVertexBufferObjects(gl.STATIC_DRAW);
-      afterInterpolation.currMaterial = MatFBTurquoise;
-    }
-  }
 
   gl.enable(gl.DEPTH_TEST);
   // gl.enable(gl.CULL_FACE);
@@ -123,7 +82,7 @@ function drawFrame() {
   globalThis.gl.clearColor(0.2, 0.2, 0.2, 1);
   globalThis.gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  const cameraPos = [cos(time / 100) * scaleValue, sin(time / 100) * scaleValue,  scaleValue];
+  const cameraPos = [cos(time / 100) * scaleValue, sin(time / 100) * scaleValue, scaleValue];
   let proj = perspective(degToRad(45.0), gl.canvas.width / gl.canvas.height, 1.0, 1000.0);
 
   const lookat = inverse(lookAt(
@@ -134,28 +93,29 @@ function drawFrame() {
 
   proj = translate(proj, translateX, translateY, translateZ);
 
+  arc.renderData(globalThis.gl.LINE_STRIP);
+  arc.renderData(globalThis.gl.POINTS);
+
+  // beforeInterpolation.currMaterial = MatFBEmerald;
   globalThis.gl.useProgram(prog);
   globalThis.gl.uniformMatrix4fv(matrixLocation, false, multiply(proj, lookat))
   globalThis.gl.enableVertexAttribArray(globalThis.positionAttributeLocation);
-  
+  globalThis.gl.uniform4fv(colorLocation, [1.0, 1.0, 1.0, 1.0]);
+  beforeInterpolation.renderDerivatives(0, globalThis.gl.LINE_STRIP);
 
-  patch.renderData(globalThis.gl.LINE_STRIP);
-  patch.renderData(globalThis.gl.POINTS);
-
-  beforeInterpolation.currMaterial = MatFBEmerald;
   if (showd1) {
-    beforeInterpolation.render(gl.TRIANGLES);
-  }
-  
-
-  if (afterInterpolation && showd2) {
-    globalThis.gl.enable(globalThis.gl.BLEND);
-    globalThis.gl.blendFunc(globalThis.gl.SRC_ALPHA, globalThis.gl.ONE);
-    afterInterpolation.render(gl.TRIANGLES);
-    globalThis.gl.depthMask(true);
-    globalThis.gl.disable(globalThis.gl.BLEND);
+    globalThis.gl.uniform4fv(colorLocation, [0.0, 0.5, 0.0, 1.0]);
+    beforeInterpolation.renderDerivatives(1, globalThis.gl.LINES);
+    globalThis.gl.uniform4fv(colorLocation, [0.0, 0.7, 0.0, 1.0]);
+    beforeInterpolation.renderDerivatives(1, globalThis.gl.POINTS);
   }
 
+  if (showd2) {
+    globalThis.gl.uniform4fv(colorLocation, [1.0, 0.3, 0.3, 1.0]);
+    beforeInterpolation.renderDerivatives(2, globalThis.gl.LINES);
+    globalThis.gl.uniform4fv(colorLocation, [1.0, 0.2, 0.2, 1.0]);
+    beforeInterpolation.renderDerivatives(2, globalThis.gl.POINTS);
+  }
 
   time++;
   setTimeout(drawFrame, 1000 / 60);
@@ -188,6 +148,14 @@ window.addEventListener('load', (event) => {
 
   document.getElementById('d2-checkbox').addEventListener('change', (event1) => {
     showd2 = event1.target.checked;
+  });
+
+  document.getElementById('point-count').addEventListener('input', (event1) => {
+    if (event1.target.value < 10000 && event1.target.value > 50) {
+      pointCountValue = event1.target.value;
+      globalThis.genericCurve = globalThis.parametricCurve.generateImage(pointCountValue, gl.STATIC_DRAW);
+      globalThis.genericCurve.updateVertexBufferObjects(gl.STATIC_DRAW);
+    }
   });
 
   document.addEventListener('wheel', (event1) => {

@@ -91,14 +91,14 @@ class GenericCurve3 {
 
         const higherOrderDerivativeSize = 2 * curvePointSize;
 
-        for (let d = 1; d < this.derivative.rowCount - 1; ++d) {
+        for (let d = 1; d < this.derivative.rowCount; ++d) {
             const array = new Float32Array(higherOrderDerivativeSize * 3);
 
             let coordinate = 0;
 
             for (let i = 0; i < curvePointSize; ++i) {
                 let sum = this.derivative.at(0, i);
-                sum = sum.add(this.derivative.at(d, i).multiply(0.3));
+                sum = sum.add(this.derivative.at(d, i).multiply(0.2));
 
                 for (let j = 0; j < 3; ++j) {
                     array[coordinate] = this.derivative.at(0, i).data[j];

@@ -47,11 +47,11 @@ window.addEventListener('load', async (event) => {
   canvas.height = canvas.clientHeight;
 
   let pd = new TriangularMatrix(2);
-  pd.set(0, 0, fifthSurface.d00);
-  pd.set(1, 0, fifthSurface.d10);
-  pd.set(1, 1, fifthSurface.d01);
+  pd.set(0, 0, secondSurface.d00);
+  pd.set(1, 0, secondSurface.d10);
+  pd.set(1, 1, secondSurface.d01);
 
-  const surface = new ParametricSurface3(pd, fifthSurface.uMin, fifthSurface.uMax, fifthSurface.vMin, fifthSurface.vMax);
+  const surface = new ParametricSurface3(pd, secondSurface.uMin, secondSurface.uMax, secondSurface.vMin, secondSurface.vMax);
   globalThis.mesh = surface.generateImage(200, 200, gl.STATIC_DRAW);
   globalThis.mesh.updateVertexBufferObjects(gl.STATIC_DRAW);
   gl.enable(gl.DEPTH_TEST);
@@ -91,10 +91,6 @@ window.addEventListener('load', (event) => {
     globalThis.mesh.currentZRotate = event1.target.value;
   });
 
-  document.getElementById('current-curve').addEventListener('input', (event1) => {
-    currentCurve(event1.target.value);
-  });
-
   document.addEventListener('wheel', (event1) => {
     event1.stopImmediatePropagation();
     scaleValue += Math.sign(event1.deltaY) * 1;
@@ -117,11 +113,3 @@ window.addEventListener('load', (event) => {
     document.getElementById('scale-slider').value = parseInt(scaleValue * 100);
   }); // mobile
 });
-
-async function currentCurve(name) {
-  if (['mouse', 'house', 'elephant', 'space_shuttle'].indexOf(name) !== -1) {
-    await globalThis.mesh.fromOFF(`/meshes/${name}.off`, true);
-    globalThis.mesh.updateVertexBufferObjects(WebGLRenderingContext.STATIC_DRAW);
-  }
-
-}

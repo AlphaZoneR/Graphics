@@ -50,7 +50,7 @@ class BiquarticPatch3 extends TensorProductSurface {
     }
 
     calculatePartialDerivatives(maximumOrderOfPartialDerivatives, u, v, pd) {
-        if (u < this.uMin || u > this.uMax || v < this.vMin || v > this.vMax || maximumOrderOfPartialDerivatives > 1) {
+        if (u < this.uMin || u > this.uMax || v < this.vMin || v > this.vMax || maximumOrderOfPartialDerivatives > 2) {
             return false;
         }
 
@@ -77,7 +77,7 @@ class BiquarticPatch3 extends TensorProductSurface {
         d1VBlendingValues.set(3, this.F3D1(v));
 
         pd.resizeRows(2);
-        pd.loadNullVectors(0);
+        pd.loadNullVectors();
 
         for (let row = 0; row < 4; ++row) {
             let auxD0V = new DCoordinate3();
@@ -92,7 +92,6 @@ class BiquarticPatch3 extends TensorProductSurface {
             pd.data[1][0] = pd.data[1][0].add(auxD0V.multiply(d1UBlendingValues.at(row)));
             pd.data[1][1] = pd.data[1][1].add(auxD1V.multiply(uBlendingValues.at(row)));
         }
-
         return true;
     }
 
@@ -106,6 +105,8 @@ class BiquarticPatch3 extends TensorProductSurface {
 
     F2D0(t) {
         return 4 * Math.pow(t, 3) * (1 - t) + 3 * Math.pow(t, 2) * Math.pow((1 - t), 2);
+        // 4t^3 * (1 - t) + 3t^2 * (1-t)^2
+        // 12t^2 * (1-t) - 4t^3 + 6t * (1-t)^2 + 3t^2 * (2t - 2)
     }
 
     F3D0(t) {
@@ -114,15 +115,15 @@ class BiquarticPatch3 extends TensorProductSurface {
 
     // first order derivatives
     F0D1(t) {
-        return this.F3D1(1 - t);
+        return -this.F3D1(1 - t);
     }
 
     F1D1(t) {
-        return this.F2D1(1 - t);
+        return -this.F2D1(1 - t);
     }
 
     F2D1(t) {
-        return - 2 * t * (2 * Math.pow(t, 2) + 3*t - 3);
+        return -4.0 * Math.pow(t, 3.0) - 6.0 * Math.pow(t, 2.0) + 6.0 * t;
     }
 
     F3D1(t) {

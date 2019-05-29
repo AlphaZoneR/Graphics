@@ -111,7 +111,7 @@ function drawFrame() {
   globalThis.gl.clearColor(0.0, 0.0, 0.0, 1);
   globalThis.gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-  const cameraPos = [cos(time / 100) * scaleValue, sin(time / 100) * scaleValue, sin(time / 100) * scaleValue];
+  const cameraPos = [cos(time / 100) * scaleValue, sin(time / 100) * scaleValue, scaleValue];
   let proj = perspective(degToRad(45.0), gl.canvas.width / gl.canvas.height, 1.0, 1000.0);
 
   const lookat = inverse(lookAt(

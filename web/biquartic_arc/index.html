@@ -15,16 +15,25 @@
 
     <div class="editor">
         <label for="scale-slider">Scale: </label>
-        <input type="range" min="0.1" max="2000" value="500" id="scale-slider">
+        <input type="range" min="0.1" max="5000" value="3500" id="scale-slider">
 
-        <label for="rotate-x-slider">RotateX: </label>
-        <input type="range" min="-180" max="180" value="0" id="rotate-x-slider">
+        <label for="rotate-x-slider">TranslateX: </label>
+        <input type="range" min="-20" max="20" value="0" id="rotate-x-slider">
 
-        <label for="rotate-y-slider">RotateY: </label>
-        <input type="range" min="-180" max="180" value="0" id="rotate-y-slider">
+        <label for="rotate-y-slider">TranslateY: </label>
+        <input type="range" min="-20" max="20" value="0" id="rotate-y-slider">
 
-        <label for="rotate-z-slider">RotateZ: </label>
-        <input type="range" min="-180" max="180" value="0" id="rotate-z-slider">
+        <label for="rotate-z-slider">TranslateZ: </label>
+        <input type="range" min="-20" max="20" value="0" id="rotate-z-slider">
+
+        <label for="d1-checkbox">Show d1</label>
+        <input id="d1-checkbox" checked="true" type="checkbox">
+
+        <label for="d2-checkbox">Show d2</label>
+        <input id="d2-checkbox" checked="true" type="checkbox">
+
+        <label for="point-count">Point count:</label>
+        <input id="point-count" min="50" max="1000" value="200" type="number">
     </div>
 
     <script src="/lodash.js"></script>
@@ -33,6 +42,7 @@
     <script src="/Core/ColumnMatrix.js"></script>
     <script src="/Core/RowMatrix.js"></script>
     <script src="/Core/TriangularMatrix.js"></script>
+    <script src="/Core/RealSquareMatrix.js"></script>
     <script src="/Core/HCoordinate3.js"></script>
     <script src="/Core/GenericCurve3.js"></script>
     <script src="/Core/ParametricCurve3.js"></script>
@@ -43,8 +53,12 @@
     <script src="/Core/Material.js"></script>
     <script src="/Core/TriangulatedMesh3.js"></script>
     <script src="/Core/ParametricSurface3.js"></script>
-    <script src="ParametricSurfaces.js"></script>
     <script src="/Core/Utils.js"></script>
+    <script src="/Core/Derivatives.js"></script>
+    <script src="/Core/LinearCombination3.js"></script>
+    <script src="/Core/CyclicCurve3.js"></script>
+    <script src="/Core/TensorProductSurface.js"></script>
+    <script src="BiquarticArc3.js"></script>
     <script src="index.js"></script>
 </body>
 
