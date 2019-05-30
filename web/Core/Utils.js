@@ -10,6 +10,15 @@ function perspective(fieldOfViewInRadians, aspect, near, far) {
     ];
 }
 
+function identity() {
+    return [
+        1, 0, 0, 0,
+        0, 1, 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1
+    ];
+}
+
 function degToRad(d) {
     return d * Math.PI / 180;
 }

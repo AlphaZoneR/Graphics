@@ -20,6 +20,8 @@ class TriangulatedMesh3 {
       this.normal = new Array(vertexCount).fill().map(u => new DCoordinate3());
       this.tex = new Array(vertexCount).fill().map(u => new TCoordinate4());
       this.face = new Array(faceCount).fill().map(u => new TriangularFace());
+      this.scale = 1.0;
+      this.translateVector = [0, 0, 0];
       glProgramFrom('/shaders/agoston.vert', '/shaders/agoston.frag')
         .then((program) => {
           this.program = program;
@@ -67,7 +69,7 @@ class TriangulatedMesh3 {
         });
     }
   }
-  
+
   deleteVertexBufferObjects() {
     if (this.vboVertices) {
       globalThis.gl.deleteBuffer(this.vboVertices);
@@ -171,7 +173,7 @@ class TriangulatedMesh3 {
 
   }
 
-  render(renderMode) {
+  render(viewMatrix, renderMode) {
     if (!this.vboVertices || !this.vboNormals || !this.vboTexCoordinates || !this.vboIndices || !this.loaded) {
       return false;
     }
@@ -208,12 +210,7 @@ class TriangulatedMesh3 {
       const cameraPos = [cos(time / 100) * scaleValue, sin(time / 100) * scaleValue, scaleValue];
       let proj = perspective(degToRad(45.0), gl.canvas.width / gl.canvas.height, 1.0, 1000.0);
 
-      const lookat = inverse(lookAt(
-        cameraPos,
-        [0.0, 0.0, 0.0],
-        [0.0, 0.0, 1.0]
-      ));
-
+      const lookat = viewMatrix;
       let model = [1, 0, 0, 0,
         0, 1, 0, 0,
         0, 0, 1, 0,
@@ -228,14 +225,19 @@ class TriangulatedMesh3 {
       gl.uniform4fv(this.light.positionLoc, position.data);
       gl.uniform4fv(this.light.halfVectorLoc, halfVector.data);
 
+
+      model = translate(model, ...this.translateVector);
+
       model = xRotate(model, degToRad(this.currentXRotate));
       model = yRotate(model, degToRad(this.currentYRotate));
       model = zRotate(model, degToRad(this.currentZRotate));
 
+
+
       gl.uniformMatrix4fv(this.projectionLocation, false, proj);
       gl.uniformMatrix4fv(this.viewLocation, false, lookat);
       gl.uniformMatrix4fv(this.modelLocation, false, model);
-      gl.uniform1f(this.scaleLocation, 1.0);
+      gl.uniform1f(this.scaleLocation, this.scale);
 
       // gl.uniform3fv(this.light.positionLoc, [cos(time / 100) * (scaleValue - 1), sin(time / 100) * (scaleValue - 1), (scaleValue - 1)]);
 
@@ -278,6 +280,48 @@ class TriangulatedMesh3 {
 
   }
 
+  calculateBoundingBox() {
+    if (this.boundingBox) {
+      return this.boundingBox;
+    }
+
+    let xmin = Infinity;
+    let xmax = -Infinity;
+    let ymin = Infinity;
+    let ymax = -Infinity;
+    let zmin = Infinity;
+    let zmax = -Infinity;
+
+    this.vertex.forEach((coordinate) => {
+      let translatedCoordinate = coordinate.add(new DCoordinate3(...this.translateVector));
+      if (translatedCoordinate.x < xmin) {
+        xmin = translatedCoordinate.x;
+      }
+
+      if (translatedCoordinate.x > xmax) {
+        xmax = translatedCoordinate.x;
+      }
+
+      if (translatedCoordinate.y < ymin) {
+        ymin = translatedCoordinate.y;
+      }
+
+      if (translatedCoordinate.y > ymax) {
+        ymax = translatedCoordinate.y;
+      }
+
+      if (translatedCoordinate.z < zmin) {
+        zmin = translatedCoordinate.z;
+      }
+
+      if (translatedCoordinate.z > zmax) {
+        zmax = translatedCoordinate.z;
+      }
+    });
+
+    this.boundingBox = [xmin, xmax, ymin, ymax, zmin, zmax];
+    return [xmin, xmax, ymin, ymax, zmin, zmax];
+  }
 
   set mat(val) {
     this.currMaterial = val;
@@ -292,10 +336,6 @@ class TriangulatedMesh3 {
     const fileContents = await fileResponse.text();
 
     const lines = fileContents.split('\n').filter(line => line.length !== 0).filter(line => !line.startsWith('#'));
-    // if (lines[0] !== 'OFF') {
-    //   console.log(lines[0].localeCompare('OFFs'));
-    //   return false;
-    // }
 
     let [vertexCount, faceCount, edgeCount] = lines[1].split(' ').map(n => parseInt(n, 10));
 
@@ -353,7 +393,8 @@ class TriangulatedMesh3 {
 
     for (let i = 0; i < faceCount; ++i) {
       const foo = new TriangularFace();
-      foo.fromString(lines[lineCount++]);
+      const doo = lines[lineCount++];
+      foo.fromString(doo);
       this.face[i] = foo;
     }
 

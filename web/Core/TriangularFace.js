@@ -24,7 +24,7 @@ class TriangularFace {
     }
 
     fromString(string) {
-        const values = string.split(' ').map(v => parseInt(v));
+        const values = string.trim().split(' ').map(v => parseInt(v));
 
         if (values.length != 4) {
             throw new Error('Malformed data!');
