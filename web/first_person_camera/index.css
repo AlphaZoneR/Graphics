@@ -24,11 +24,133 @@ body {
     height: 100%;
 }
 
-.editor > input {
+.editor>input {
     display: block;
     margin: auto;
 }
 
-.editor > label {
-    display: inline-block;
+.editor>label {
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-size: 16pt;
+}
+
+.patch-list {
+    width: 90%;
+    height: 40%;
+    margin: auto;
+    border: 1px solid white;
+    overflow-y: scroll;
+}
+
+.activity-menu {
+    width: 90%;
+    height: 40%;
+    margin: auto;
+    border: 1px solid white;
+}
+
+.transform-menu {
+  width: 90%;
+  height: 40px;
+  margin: auto;
+  border: 1px solid white;
+}
+
+.patch-element {
+  width: 95%;
+  height: 30px;
+  margin: auto;
+  border: 1px solid white;
+  margin-top: 5px;
+  margin-bottom: 5px;
+  text-align: center;
+  font-size: 14pt;
+  cursor: pointer;
+}
+
+.patch-element:hover {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.activity-list {
+  width: 95%;
+  height: 40px;
+  margin: auto;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  position: relative;
+  display: block;
+}
+
+.activity-list > button {
+  width: 33%;
+  height: 100%;
+  margin: 0px;
+  float: left;
+  font-size: 16pt;
+  background: none;
+  border: 1px solid white;
+  outline: none;
+  color: white;
+  transition: 0.3s all cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+.activity-list > button:hover {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.transform-menu > button {
+  width: 50%;
+  height: 100%;
+  margin: auto;
+  float: left;
+  font-size: 16pt;
+  background: none;
+  border: 1px solid white;
+  outline: none;
+  color: white;
+  transition: 0.3s all cubic-bezier(0.075, 0.82, 0.165, 1);
+}
+
+.transform-menu > button:hover {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.selected {
+  background: rgba(255, 255, 255, 0.8) !important; 
+  color: darkblue !important;
+}
+
+.activity {
+  position: relative;
+  width: 95%;
+  height: 70%;
+  margin: auto;
+  border: 1px solid white;
+}
+
+.activity > table {
+  width: 95%;
+  margin: auto;
+  margin-top: 10px;
+}
+
+.activity > table > tbody > tr > td {
+  height: 30px;
+  width: 33%;
+  text-align: center;
+  border: 1px solid white;
+  transition: 0.3s all cubic-bezier(0.165, 0.84, 0.44, 1);
+  cursor: pointer;
+}
+
+.activity > table > tbody > tr > td:hover {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.disabled {
+  background: black !important;
+  cursor: default !important; 
 }

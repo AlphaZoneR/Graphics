@@ -1,28 +1,59 @@
 class ControlNet {
-  constructor() {
+  constructor(generate = true) {
     this.points = new Array(4).fill().map(row => []);
 
     for (let i = 0; i < 4; ++i) {
       for (let j = 0; j < 4; ++j) {
         this.points[i][j] = new ControlPoint(i / 4 + 2, Math.random() / 4, j / 4);
+        this.points[i][j].parentNet = [this];
       }
     }
+
+    if (generate) {
+      this.patch = this.generatePatch();
+      this.image = this.patch.generateImage(30, 30, globalThis.gl.STATIC_DRAW);
+      this.image.updateVertexBufferObjects(globalThis.gl.STATIC_DRAW);
+      this.image.controlNet = this;
+      console.log('here');
+    }
+
 
     this.loaded = false;
     this.program = null;
 
-    glProgramFrom('vert.glsl', 'frag.glsl').then((program) => {
-      this.program = program;
+    if (globalThis.netProgram) {
+      this.program = globalThis.netProgram;
       this.loaded = true;
       this.vertexLocation = gl.getAttribLocation(this.program, 'in_vert');
       this.colorLocation = gl.getUniformLocation(this.program, 'u_color');
       this.matrixLocation = gl.getUniformLocation(this.program, 'u_matrix');
-      this.loaded = true;
-    });
+    } else {
+      glProgramFrom('vert.glsl', 'frag.glsl').then((program) => {
+        this.program = program;
+        globalThis.netProgram = this.program;
+        this.vertexLocation = gl.getAttribLocation(this.program, 'in_vert');
+        this.colorLocation = gl.getUniformLocation(this.program, 'u_color');
+        this.matrixLocation = gl.getUniformLocation(this.program, 'u_matrix');
+        this.loaded = true;
+      });
+    }
+
 
     this.linesVbo = null;
     this.lineCount = 0;
     this.generateLinesVBO();
+    this.updated = false;
+
+    this.neighbours = {
+      NW: null,
+      N: null,
+      NE: null,
+      E: null,
+      SE: null,
+      S: null,
+      SW: null,
+      W: null,
+    }
   }
 
   deleteLinesVBO() {
@@ -31,9 +62,20 @@ class ControlNet {
     }
   }
 
+  get controlPointMeshes() {
+    const result = [];
+
+    for (let i = 0; i < 4; ++i) {
+      for (let j = 0; j < 4; ++j) {
+        result.push(this.points[i][j].mesh);
+      }
+    }
+
+    return result;
+  }
+
   generateLinesVBO() {
     let data = [];
-    let count = 0;
     for (let i = 0; i < 4; ++i) {
       for (let j = 0; j < 4; ++j) {
         if (i + 1 < 4) {
@@ -85,6 +127,7 @@ class ControlNet {
     }
 
     this._renderLines(viewMatrix);
+    this.image.render(viewMatrix, globalThis.gl.TRIANGLES);
   }
 
   generatePatch() {
@@ -97,5 +140,91 @@ class ControlNet {
     }
 
     return patch;
+  }
+
+  updatePatch() {
+    this.generateLinesVBO();
+    this.patch = this.generatePatch();
+    this.image = this.patch.generateImage(30, 30, globalThis.gl.STATIC_DRAW);
+    this.image.updateVertexBufferObjects(globalThis.gl.STATIC_DRAW);
+    this.image.controlNet = this;
+  }
+
+  highlightDirection(direction) {
+    if (direction == 'N') {
+      this.points[0].forEach(point => {
+        point.mesh.mat = MatFBTurquoise;
+      });
+    } else if (direction == 'S') {
+      this.points[3].forEach(point => {
+        point.mesh.mat = MatFBTurquoise;
+      });
+    } else if (direction == 'W') {
+      this.points[0][0].mesh.mat = MatFBTurquoise;
+      this.points[1][0].mesh.mat = MatFBTurquoise;
+      this.points[2][0].mesh.mat = MatFBTurquoise;
+      this.points[3][0].mesh.mat = MatFBTurquoise;
+    } else if (direction == 'E') {
+      this.points[0][3].mesh.mat = MatFBTurquoise;
+      this.points[1][3].mesh.mat = MatFBTurquoise;
+      this.points[2][3].mesh.mat = MatFBTurquoise;
+      this.points[3][3].mesh.mat = MatFBTurquoise;
+    } else if (direction == 'NW') {
+      this.points[0][0].mesh.mat = MatFBTurquoise;
+    } else if (direction == 'NE') {
+      this.points[0][3].mesh.mat = MatFBTurquoise;
+    } else if (direction == 'SE') {
+      this.points[3][3].mesh.mat = MatFBTurquoise;
+    } else if (direction == 'SW') {
+      this.points[3][0].mesh.mat = MatFBTurquoise;
+    }
+  }
+
+  move(x, y, z) {
+    if (arguments.length < 3) {
+      return false;
+    }
+
+    for (const row of this.points) {
+      for (const point of row) {
+        if (!point.updated) {
+          point.translate(x, y, z, false);
+          point.updated = this;
+          point.mesh.moved = true;
+        }
+      }
+    }
+    this.updated = true;
+
+    for (const key of Object.keys(this.neighbours)) {
+      if (this.neighbours[key] && !this.neighbours[key].updated) {
+        this.neighbours[key].move(x, y, z);
+      }
+    }
+
+
+    for (const row of this.points) {
+      for (const point of row) {
+        if (point.updated == this) {
+          point.updated = null;
+        }
+      }
+    }
+
+    this.updated = false;
+
+    this.updatePatch();
+  }
+
+  color() {
+    this.image.mat = MatFBEmerald;
+
+    this.updated = true;
+    for (const key of Object.keys(this.neighbours)) {
+      if (this.neighbours[key] && !this.neighbours[key].updated) {
+        this.neighbours[key].color();
+      }
+    }
+    this.updated = false;
   }
 }

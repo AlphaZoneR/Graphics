@@ -22,51 +22,83 @@ class TriangulatedMesh3 {
       this.face = new Array(faceCount).fill().map(u => new TriangularFace());
       this.scale = 1.0;
       this.translateVector = [0, 0, 0];
-      glProgramFrom('/shaders/agoston.vert', '/shaders/agoston.frag')
-        .then((program) => {
-          this.program = program;
-          this.frontMaterial = {
-            ambientLoc: gl.getUniformLocation(this.program, 'front_material.ambient'),
-            diffuseLoc: gl.getUniformLocation(this.program, 'front_material.diffuse'),
-            specularLoc: gl.getUniformLocation(this.program, 'front_material.specular'),
-            emissionLoc: gl.getUniformLocation(this.program, 'front_material.emission'),
-            shininessLoc: gl.getUniformLocation(this.program, 'front_material.shininess')
-          }
+      this.boundingBox = null;
+      this.center = null;
+      this.moved = true;
 
-          this.backMaterial = {
-            ambientLoc: gl.getUniformLocation(this.program, 'back_material.ambient'),
-            diffuseLoc: gl.getUniformLocation(this.program, 'back_material.diffuse'),
-            specularLoc: gl.getUniformLocation(this.program, 'back_material.specular'),
-            emissionLoc: gl.getUniformLocation(this.program, 'back_material.emission'),
-            shininessLoc: gl.getUniformLocation(this.program, 'back_material.shininess')
-          }
+      if (globalThis.triangulatedProgram) {
+        this.program = globalThis.triangulatedProgram;
+        this.frontMaterial = {
+          ambientLoc: gl.getUniformLocation(this.program, 'front_material.ambient'),
+          diffuseLoc: gl.getUniformLocation(this.program, 'front_material.diffuse'),
+          specularLoc: gl.getUniformLocation(this.program, 'front_material.specular'),
+          emissionLoc: gl.getUniformLocation(this.program, 'front_material.emission'),
+          shininessLoc: gl.getUniformLocation(this.program, 'front_material.shininess')
+        }
 
-          this.light = {
-            positionLoc: gl.getUniformLocation(this.program, 'light_source.position'),
-            ambientLoc: gl.getUniformLocation(this.program, 'light_source.ambient'),
-            diffuseLoc: gl.getUniformLocation(this.program, 'light_source.diffuse'),
-            specularLoc: gl.getUniformLocation(this.program, 'light_source.specular'),
-            halfVectorLoc: gl.getUniformLocation(this.program, 'light_source.half_vector'),
-          }
+        this.backMaterial = {
+          ambientLoc: gl.getUniformLocation(this.program, 'back_material.ambient'),
+          diffuseLoc: gl.getUniformLocation(this.program, 'back_material.diffuse'),
+          specularLoc: gl.getUniformLocation(this.program, 'back_material.specular'),
+          emissionLoc: gl.getUniformLocation(this.program, 'back_material.emission'),
+          shininessLoc: gl.getUniformLocation(this.program, 'back_material.shininess')
+        }
 
-          this.modelLocation = gl.getUniformLocation(this.program, 'u_model');
-          this.viewLocation = gl.getUniformLocation(this.program, 'u_view');
-          this.projectionLocation = gl.getUniformLocation(this.program, 'u_projection');
-          this.scaleLocation = gl.getUniformLocation(this.program, 'u_scale');
+        this.light = {
+          positionLoc: gl.getUniformLocation(this.program, 'light_source.position'),
+          ambientLoc: gl.getUniformLocation(this.program, 'light_source.ambient'),
+          diffuseLoc: gl.getUniformLocation(this.program, 'light_source.diffuse'),
+          specularLoc: gl.getUniformLocation(this.program, 'light_source.specular'),
+          halfVectorLoc: gl.getUniformLocation(this.program, 'light_source.half_vector'),
+        }
 
-          this.vertexLocation = gl.getAttribLocation(this.program, 'position');
-          this.normalLocation = gl.getAttribLocation(this.program, 'normal');
+        this.modelLocation = gl.getUniformLocation(this.program, 'u_model');
+        this.viewLocation = gl.getUniformLocation(this.program, 'u_view');
+        this.projectionLocation = gl.getUniformLocation(this.program, 'u_projection');
+        this.scaleLocation = gl.getUniformLocation(this.program, 'u_scale');
 
-          glProgramFrom('/shaders/vert_light.glsl', '/shaders/frag_light.glsl')
-            .then((lightProg) => {
-              this.lightProg = lightProg;
-              this.lightVertexLocation = gl.getAttribLocation(this.lightProg, 'in_vert');
-              this.lightModelLocation = gl.getUniformLocation(this.lightProg, 'u_model');
-              this.lightViewLocation = gl.getUniformLocation(this.lightProg, 'u_view');
-              this.lightProjectionLocation = gl.getUniformLocation(this.lightProg, 'u_projection');
-              this.loaded = true;
-            });
-        });
+        this.vertexLocation = gl.getAttribLocation(this.program, 'position');
+        this.normalLocation = gl.getAttribLocation(this.program, 'normal');
+        this.loaded = true;
+      } else {
+        glProgramFrom('/shaders/agoston.vert', '/shaders/agoston.frag')
+          .then((program) => {
+            this.program = program;
+            globalThis.triangulatedProgram = program;
+            this.frontMaterial = {
+              ambientLoc: gl.getUniformLocation(this.program, 'front_material.ambient'),
+              diffuseLoc: gl.getUniformLocation(this.program, 'front_material.diffuse'),
+              specularLoc: gl.getUniformLocation(this.program, 'front_material.specular'),
+              emissionLoc: gl.getUniformLocation(this.program, 'front_material.emission'),
+              shininessLoc: gl.getUniformLocation(this.program, 'front_material.shininess')
+            }
+
+            this.backMaterial = {
+              ambientLoc: gl.getUniformLocation(this.program, 'back_material.ambient'),
+              diffuseLoc: gl.getUniformLocation(this.program, 'back_material.diffuse'),
+              specularLoc: gl.getUniformLocation(this.program, 'back_material.specular'),
+              emissionLoc: gl.getUniformLocation(this.program, 'back_material.emission'),
+              shininessLoc: gl.getUniformLocation(this.program, 'back_material.shininess')
+            }
+
+            this.light = {
+              positionLoc: gl.getUniformLocation(this.program, 'light_source.position'),
+              ambientLoc: gl.getUniformLocation(this.program, 'light_source.ambient'),
+              diffuseLoc: gl.getUniformLocation(this.program, 'light_source.diffuse'),
+              specularLoc: gl.getUniformLocation(this.program, 'light_source.specular'),
+              halfVectorLoc: gl.getUniformLocation(this.program, 'light_source.half_vector'),
+            }
+
+            this.modelLocation = gl.getUniformLocation(this.program, 'u_model');
+            this.viewLocation = gl.getUniformLocation(this.program, 'u_view');
+            this.projectionLocation = gl.getUniformLocation(this.program, 'u_projection');
+            this.scaleLocation = gl.getUniformLocation(this.program, 'u_scale');
+
+            this.vertexLocation = gl.getAttribLocation(this.program, 'position');
+            this.normalLocation = gl.getAttribLocation(this.program, 'normal');
+            this.loaded = true;
+          });
+      }
     }
   }
 
@@ -281,7 +313,11 @@ class TriangulatedMesh3 {
   }
 
   calculateBoundingBox() {
-    if (this.boundingBox) {
+    if (!this.loaded) {
+      return [];
+    }
+
+    if (this.boundingBox && !this.moved) {
       return this.boundingBox;
     }
 
@@ -293,7 +329,7 @@ class TriangulatedMesh3 {
     let zmax = -Infinity;
 
     this.vertex.forEach((coordinate) => {
-      let translatedCoordinate = coordinate.add(new DCoordinate3(...this.translateVector));
+      let translatedCoordinate = coordinate.multiply(this.scale).add(new DCoordinate3(...this.translateVector))
       if (translatedCoordinate.x < xmin) {
         xmin = translatedCoordinate.x;
       }
@@ -318,9 +354,30 @@ class TriangulatedMesh3 {
         zmax = translatedCoordinate.z;
       }
     });
-
     this.boundingBox = [xmin, xmax, ymin, ymax, zmin, zmax];
+    this.moved = false;
     return [xmin, xmax, ymin, ymax, zmin, zmax];
+  }
+
+  calculateCenter() {
+    if (!this.loaded) {
+      return [];
+    }
+
+    if (this.center && !this.moved) {
+      return this.center;
+    }
+
+    let centroid = new DCoordinate3(0, 0, 0);
+
+    this.vertex.forEach((coordinate) => {
+      centroid = centroid.add(coordinate.multiply(this.scale).add(new DCoordinate3(...this.translateVector)));
+    });
+
+    centroid = centroid.divide(this.vertex.length);
+    this.center = centroid;
+    this.moved = false;
+    return this.center;
   }
 
   set mat(val) {

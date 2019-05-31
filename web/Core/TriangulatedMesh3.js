@@ -67,7 +67,7 @@ class TriangulatedMesh3 {
         });
     }
   }
-  
+
   deleteVertexBufferObjects() {
     if (this.vboVertices) {
       globalThis.gl.deleteBuffer(this.vboVertices);

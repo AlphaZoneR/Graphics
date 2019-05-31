@@ -14,30 +14,49 @@
     <canvas id="drawable"></canvas>
 
     <div class="editor">
-        <label for="scale-slider">Scale: </label>
-        <input type="range" min="0.1" max="5000" value="3500" id="scale-slider">
+        <label for="patch-list">Patches</label>
+        <div class="patch-list" id="patches">
+        </div>
+        <label for="patch-list">Function</label>
+        <div class="activity-menu">
+            <div class="activity-list">
+                <button class="selected activity-element">Extend</button>
+                <button class="activity-element">Merge</button>
+                <button class="activity-element">Join</button>
+            </div>
 
-        <label for="rotate-x-slider">TranslateX: </label>
-        <input type="range" min="-20" max="20" value="0" id="rotate-x-slider">
-
-        <label for="rotate-y-slider">TranslateY: </label>
-        <input type="range" min="-20" max="20" value="0" id="rotate-y-slider">
-
-        <label for="rotate-z-slider">TranslateZ: </label>
-        <input type="range" min="-20" max="20" value="0" id="rotate-z-slider">
-
-        <label for="d1-checkbox">Show d1</label>
-        <input id="d1-checkbox" checked="true" type="checkbox">
-
-        <label for="d2-checkbox">Show d2</label>
-        <input id="d2-checkbox" checked="true" type="checkbox">
-
-        <label for="point-count">Point count:</label>
-        <input id="point-count" min="50" max="1000" value="200" type="number">
+            <div class="activity" id="extend">
+                <table>
+                    <tr>
+                        <td class="extend-direction">NW</td>
+                        <td class="extend-direction">N</td>
+                        <td class="extend-direction">NE</td>
+                    </tr>
+                    <tr>
+                        <td class="extend-direction">W</td>
+                        <td class="disabled"></td>
+                        <td class="extend-direction">E</td>
+                    </tr>
+                    <tr>
+                        <td class="extend-direction">SW</td>
+                        <td class="extend-direction">S</td>
+                        <td class="extend-direction">SE</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="activity" hidden id="merge">szia</div>
+            <div class="activity" hidden id="join"></div>
+        </div>
+        <label for="transform-menu">Transform</label>
+        <div class="transform-menu">
+            <button class="transform-element selected">Points</button>
+            <button class="transform-element">Patches</button>
+        </div>
     </div>
 
     <script src="/lodash.js"></script>
     <script src="/gl-matrix.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
     <script src="/Core/DCoordinates.js"></script>
     <script src="/Core/Matrix.js"></script>
     <script src="/Core/ColumnMatrix.js"></script>
@@ -64,6 +83,7 @@
     <script src="Crosshair.js"></script>
     <script src="ControlPoint.js"></script>
     <script src="ControlNet.js"></script>
+    <script src="TransformVectors.js"></script>
     <script src="index.js"></script>
 </body>
 

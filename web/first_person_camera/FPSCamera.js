@@ -36,6 +36,12 @@ class FPSCamera {
     return new DCoordinate3(this.viewMatrix[2], this.viewMatrix[6], this.viewMatrix[10]);
   }
 
+  set forward(val) {
+    this.viewMatrix[2] = val.x;
+    this.viewMatrix[6] = val.y;
+    this.viewMatrix[10] = val.z;
+  }
+
   move(character) {
     let dx = 0.0;
     let dz = 0.0;

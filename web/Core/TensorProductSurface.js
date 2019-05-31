@@ -32,16 +32,27 @@ class TensorProductSurface {
     this.loaded = false;
     this.program = null;
 
-    glProgramFrom('vert.glsl', 'frag.glsl').then((program) => {
-      const gl = globalThis.gl;
-      if (gl instanceof WebGLRenderingContext) {
-        this.program = program;
-        this.vertexLocation = gl.getAttribLocation(this.program, 'in_vert');
-        this.matrixLocation = gl.getUniformLocation(this.program, 'u_matrix');
-        this.colorLocation = gl.getUniformLocation(this.program, 'u_color');
-        this.loaded = true;
-      }
-    });
+    if (globalThis.netProgram) {
+      this.program = globalThis.netProgram;
+      this.vertexLocation = gl.getAttribLocation(this.program, 'in_vert');
+      this.matrixLocation = gl.getUniformLocation(this.program, 'u_matrix');
+      this.colorLocation = gl.getUniformLocation(this.program, 'u_color');
+      this.loaded = true;
+    } else {
+      glProgramFrom('vert.glsl', 'frag.glsl').then((program) => {
+        const gl = globalThis.gl;
+        if (gl instanceof WebGLRenderingContext) {
+          this.program = program;
+          globalThis.netProgram = program;
+          this.vertexLocation = gl.getAttribLocation(this.program, 'in_vert');
+          this.matrixLocation = gl.getUniformLocation(this.program, 'u_matrix');
+          this.colorLocation = gl.getUniformLocation(this.program, 'u_color');
+          this.loaded = true;
+        }
+      });
+    }
+
+
 
   }
 
@@ -335,7 +346,7 @@ class TensorProductSurface {
 
     for (let i = 0; i < rowCount; ++i) {
       for (let j = 0; j < columnCount; ++j) {
-        a.data[i][j] = new DCoordinate3(); 
+        a.data[i][j] = new DCoordinate3();
       }
     }
 
@@ -361,7 +372,7 @@ class TensorProductSurface {
     if (allowedRenderMode.indexOf(renderMode) === -1 || !this.vboData || !this.loaded || !this.program) {
       return false;
     }
-    
+
     gl.bindBuffer(GL.ARRAY_BUFFER, this.vboData);
 
     const cameraPos = [cos(time / 100) * scaleValue, sin(time / 100) * scaleValue, scaleValue];
@@ -392,7 +403,7 @@ class TensorProductSurface {
     for (let c = 0; c < this.data.columnCount; ++c) {
       const offset = this.data.rowCount * this.data.columnCount + c * this.data.rowCount;
       gl.drawArrays(renderMode, offset, this.data.rowCount);
-    }    
+    }
 
     gl.bindBuffer(GL.ARRAY_BUFFER, null);
     gl.useProgram(null);
