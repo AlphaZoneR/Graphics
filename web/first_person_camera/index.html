@@ -20,11 +20,15 @@
         <label for="patch-list">Function</label>
         <div class="activity-menu">
             <div class="activity-list">
+                <button class="activity-element">Insert</button>
                 <button class="selected activity-element">Extend</button>
                 <button class="activity-element">Merge</button>
                 <button class="activity-element">Join</button>
+                <button class="activity-element">Edit</button>
             </div>
 
+            <div class="activity" id="insert" hidden>
+            </div>
             <div class="activity" id="extend">
                 <table>
                     <tr>
@@ -44,8 +48,98 @@
                     </tr>
                 </table>
             </div>
-            <div class="activity" hidden id="merge">szia</div>
-            <div class="activity" hidden id="join"></div>
+            <div class="activity" hidden id="merge">
+                <table id="selected-merge-direction">
+                    <tr>
+                        <td class="merge-direction-selected">NW</td>
+                        <td class="merge-direction-selected">N</td>
+                        <td class="merge-direction-selected">NE</td>
+                    </tr>
+                    <tr>
+                        <td class="merge-direction-selected">W</td>
+                        <td class="disabled"></td>
+                        <td class="merge-direction-selected">E</td>
+                    </tr>
+                    <tr>
+                        <td class="merge-direction-selected">SW</td>
+                        <td class="merge-direction-selected">S</td>
+                        <td class="merge-direction-selected">SE</td>
+                    </tr>
+                </table>
+                <select id="merge-dropdown"> </select>
+                <table id="other-merge-direction">
+                    <tr>
+                        <td class="merge-direction-other">NW</td>
+                        <td class="merge-direction-other">N</td>
+                        <td class="merge-direction-other">NE</td>
+                    </tr>
+                    <tr>
+                        <td class="merge-direction-other">W</td>
+                        <td class="disabled"></td>
+                        <td class="merge-direction-other">E</td>
+                    </tr>
+                    <tr>
+                        <td class="merge-direction-other">SW</td>
+                        <td class="merge-direction-other">S</td>
+                        <td class="merge-direction-other">SE</td>
+                    </tr>
+                </table>
+
+                <button id="merge-button">Merge</button>
+            </div>
+            <div class="activity" hidden id="join">
+                <table id="selected-join-direction">
+                    <tr>
+                        <td class="join-direction-selected">NW</td>
+                        <td class="join-direction-selected">N</td>
+                        <td class="join-direction-selected">NE</td>
+                    </tr>
+                    <tr>
+                        <td class="join-direction-selected">W</td>
+                        <td class="disabled"></td>
+                        <td class="join-direction-selected">E</td>
+                    </tr>
+                    <tr>
+                        <td class="join-direction-selected">SW</td>
+                        <td class="join-direction-selected">S</td>
+                        <td class="join-direction-selected">SE</td>
+                    </tr>
+                </table>
+                <select id="join-dropdown">
+                    <option>Patch1</option>
+                </select>
+                <table id="other-join-direction">
+                    <tr>
+                        <td class="join-direction-other">NW</td>
+                        <td class="join-direction-other">N</td>
+                        <td class="join-direction-other">NE</td>
+                    </tr>
+                    <tr>
+                        <td class="join-direction-other">W</td>
+                        <td class="disabled"></td>
+                        <td class="join-direction-other">E</td>
+                    </tr>
+                    <tr>
+                        <td class="join-direction-other">SW</td>
+                        <td class="join-direction-other">S</td>
+                        <td class="join-direction-other">SE</td>
+                    </tr>
+                </table>
+
+                <button id="join-button">Join</button>
+            </div>
+
+            <div class="activity" hidden id="edit">
+                <select id="material-select">
+                    <option value="emerald">emerald</option>
+                    <option value="brass">brass</option>
+                    <option value="gold">gold</option>
+                    <option value="ruby">ruby</option>
+                    <option value="pearl">pearl</option>
+                    <option value="silver">silver</option>
+                    <option value="turquoise">turquoise</option>
+                </select>
+            </div>
         </div>
         <label for="transform-menu">Transform</label>
         <div class="transform-menu">

@@ -38,6 +38,7 @@ let draggedMesh = null;
 
 let controlNets = [];
 let selectedNet = null;
+let otherNet = null;
 
 const POINTS = 0;
 const PATCHES = 1;
@@ -122,13 +123,15 @@ window.addEventListener('load', async (event) => {
         const endPoint = startingPoint.add(direction.normalize().multiply(-distance));
         mesh.controlPoint.move(...endPoint.data);
         transformVectors.move(mesh.translateVector);
+        resetControlPointColors();
       } else if (TRANSFORM_MODE === PATCHES) {
         const endPoint = startingPoint.add(direction.normalize().multiply(-distance));
         if (endPoint.distance(collisionPoint) > 0.2) {
           mesh.controlNet.move(...endPoint.subtract(collisionPoint).data);
           transformVectors.move(mesh.calculateCenter().data);
-          selectedNet = mesh.controlNet;
         }
+        selectedNet = mesh.controlNet;
+        resetContronNetColors();
       }
 
       mesh.moved = true;
@@ -181,18 +184,6 @@ window.addEventListener('load', async (event) => {
     canvas.mozRequestPointerLock;
 
   canvas.requestPointerLock();
-
-  elephant = new TriangulatedMesh3();
-  await elephant.fromOFF('/meshes/elephant.off', true);
-  elephant.updateVertexBufferObjects(gl.STATIC_DRAW);
-
-
-  mouse = new TriangulatedMesh3();
-  await mouse.fromOFF('/meshes/sphere.off', true);
-  mouse.updateVertexBufferObjects(gl.STATIC_DRAW);
-  mouse.translateVector = [0, 0, 1];
-  mouse.currentYRotate = 270;
-  mouse.currMaterial = MatFBEmerald;
 
   controlNets.push(new ControlNet());
   selectedNet = controlNets[0];
@@ -326,6 +317,10 @@ function resetControlPointColors() {
   everyControlPointMesh.forEach(mesh => mesh.mat = MatFBRuby);
 }
 
+function resetContronNetColors() {
+  controlNets.forEach(net => net.image.mat = net.defaultMaterial);
+}
+
 function selectPatchById(id) {
   $('.patch-element').removeClass('selected');
   $(`#${id}`).addClass('selected');
@@ -415,16 +410,126 @@ window.addEventListener('load', (event) => {
     $('.activity-element').removeClass('selected');
     self.addClass('selected');
     $('.activity').attr('hidden', 'true');
+
+    if (self.html().toLowerCase() == 'insert') {
+      generateInsertTable();
+    }
+
+    if (self.html().toLowerCase() == 'join') {
+      generateDropdown($('#join-dropdown'));
+    }
+
+    if (self.html().toLowerCase() == 'merge') {
+      generateDropdown($('#merge-dropdown'));
+    }
+
     $(`#${self.html().toLowerCase()}`).removeAttr('hidden');
   });
 
   $('.extend-direction').click((event1) => {
-    extendPatch($(event1.target).html(), selectedNet);
+    const newNet = selectedNet.extend($(event1.target).html());
+    if (newNet) {
+      newNet.points.forEach((row) => {
+        row.forEach(point => point.mesh.moved = true);
+      })
+      newNet.updatePatch();
+      controlNets.push(newNet);
+      addPatch(`Patch${controlNets.length}`, controlNets.length - 1);
+    }
   })
 
   $('.extend-direction').mouseenter((event1) => {
     resetControlPointColors();
     selectedNet.highlightDirection($(event1.target).html());
+  });
+
+  $('.join-direction-selected').mouseenter((event1) => {
+    resetControlPointColors();
+    if (selectedNet) {
+      selectedNet.highlightDirection($(event1.target).html());
+    }
+  });
+
+  $('.join-direction-selected').click((event1) => {
+    $('.join-direction-selected').removeClass('selected');
+    $(event1.target).addClass('selected');
+  });
+
+  $('.join-direction-other').click((event1) => {
+    $('.join-direction-other').removeClass('selected');
+    $(event1.target).addClass('selected');
+  });
+
+  $('#join-button').click(() => {
+    const thisDirection = $('.join-direction-selected.selected').html();
+    const otherDirection = $('.join-direction-other.selected').html();
+
+    if (!thisDirection || !otherDirection) {
+      return;
+    }
+
+    if (!selectedNet || !otherNet) {
+      return;
+    }
+
+    const newNet = selectedNet.join(otherNet, thisDirection, otherDirection);
+    if (newNet) {
+      newNet.updatePatch();
+      controlNets.push(newNet);
+      addPatch(`Patch${controlNets.length}`, controlNets.length - 1);
+    }
+  });
+
+  $('.join-direction-other').mouseenter((event1) => {
+    resetControlPointColors();
+    if (otherNet) {
+      otherNet.highlightDirection($(event1.target).html());
+    }
+  });
+
+  //
+
+  $('.merge-direction-selected').mouseenter((event1) => {
+    resetControlPointColors();
+    if (selectedNet) {
+      selectedNet.highlightDirection($(event1.target).html());
+    }
+  });
+
+  $('.merge-direction-selected').click((event1) => {
+    $('.merge-direction-selected').removeClass('selected');
+    $(event1.target).addClass('selected');
+  });
+
+  $('.merge-direction-other').click((event1) => {
+    $('.merge-direction-other').removeClass('selected');
+    $(event1.target).addClass('selected');
+  });
+
+  $('#merge-button').click(() => {
+    const thisDirection = $('.merge-direction-selected.selected').html();
+    const otherDirection = $('.merge-direction-other.selected').html();
+
+    if (!thisDirection || !otherDirection) {
+      return;
+    }
+
+    if (!selectedNet || !otherNet) {
+      return;
+    }
+
+    const newNet = selectedNet.merge(otherNet, thisDirection, otherDirection);
+    if (newNet) {
+      newNet.updatePatch();
+      deleteNet(otherNet);
+    }
+  });
+
+  $('.merge-direction-other').mouseenter((event1) => {
+    resetControlPointColors();
+    if (otherNet) {
+      otherNet.highlightDirection($(event1.target).html());
+    }
   });
 
   $('.extend-direction').mouseleave((event1) => {
@@ -442,240 +547,38 @@ window.addEventListener('load', (event) => {
       TRANSFORM_MODE = PATCHES;
     }
   })
+
+  $('#material-select').change((event) => {
+    const material = $(event.target).val();
+    if (selectedNet) {
+      if (material == 'emerald') {
+        selectedNet.defaultMaterial = MatFBEmerald;
+      } else if (material == 'brass') {
+        selectedNet.defaultMaterial = MatFBBrass;
+      } else if (material == 'gold') {
+        selectedNet.defaultMaterial = MatFBGold;
+      } else if (material == 'ruby') {
+        selectedNet.defaultMaterial = MatFBRuby;
+      } else if (material == 'pearl') {
+        selectedNet.defaultMaterial = MatFBPearl;
+      } else if (material == 'silver') {
+        selectedNet.defaultMaterial = MatFBSilver;
+      } else if (material == 'turquoise') {
+        selectedNet.defaultMaterial = MatFBTurquoise;
+      }
+
+      resetContronNetColors();
+    }
+  });
 });
 
-function extendPatch(direction, extendableNet, update = true) {
-  if (direction == 'N') {
-    if (extendableNet.neighbours.N && update) {
-      return;
-    }
+function deleteNet(net) {
+  net.removeFromNeighbours();
+  const index = controlNets.indexOf(net);
+  $(`#${index}`).remove();
+  controlNets = controlNets.filter((val, i) => i !== index);
 
-    const controlNet = new ControlNet(update);
-    const p = extendableNet.points[0];
-    const q = _.cloneDeep(extendableNet.points[1]);
-
-    controlNet.points[3][0] = p[0];
-    controlNet.points[3][1] = p[1];
-    controlNet.points[3][2] = p[2];
-    controlNet.points[3][3] = p[3];
-
-    controlNet.points[3][0].parentNet.push(controlNet);
-    controlNet.points[3][1].parentNet.push(controlNet);
-    controlNet.points[3][2].parentNet.push(controlNet);
-    controlNet.points[3][3].parentNet.push(controlNet);
-
-    for (let i = 1; i < 4; ++i) {
-      controlNet.points[3 - i][0] = new ControlPoint(...p[0].position.add(p[0].position.subtract(q[0].position).multiply(i)).data);
-      controlNet.points[3 - i][1] = new ControlPoint(...p[1].position.add(p[1].position.subtract(q[1].position).multiply(i)).data);
-      controlNet.points[3 - i][2] = new ControlPoint(...p[2].position.add(p[2].position.subtract(q[2].position).multiply(i)).data);
-      controlNet.points[3 - i][3] = new ControlPoint(...p[3].position.add(p[3].position.subtract(q[3].position).multiply(i)).data);
-    }
-
-    for (let i = 0; i < 3; ++i) {
-      for (let j = 0; j < 4; ++j) {
-        controlNet.points[i][j].parentNet = [controlNet];
-      }
-    }
-
-    if (update) {
-      extendableNet.neighbours.N = controlNet;
-      controlNet.neighbours.S = extendableNet;
-
-      controlNet.updatePatch();
-      controlNets.push(controlNet);
-      addPatch(`Patch${controlNets.length}`, controlNets.length - 1);
-    }
-
-    return controlNet;
-  } else if (direction == 'S') {
-    if (extendableNet.neighbours.S && update) {
-      return;
-    }
-
-    const controlNet = new ControlNet(update);
-    const p = extendableNet.points[3];
-    const q = _.cloneDeep(extendableNet.points[2]);
-
-    controlNet.points[0][0] = p[0];
-    controlNet.points[0][1] = p[1];
-    controlNet.points[0][2] = p[2];
-    controlNet.points[0][3] = p[3];
-
-    controlNet.points[0][0].parentNet.push(controlNet);
-    controlNet.points[0][1].parentNet.push(controlNet);
-    controlNet.points[0][2].parentNet.push(controlNet);
-    controlNet.points[0][3].parentNet.push(controlNet);
-
-    for (let i = 1; i < 4; ++i) {
-      controlNet.points[i][0] = new ControlPoint(...p[0].position.add(p[0].position.subtract(q[0].position).multiply(i)).data);
-      controlNet.points[i][1] = new ControlPoint(...p[1].position.add(p[1].position.subtract(q[1].position).multiply(i)).data);
-      controlNet.points[i][2] = new ControlPoint(...p[2].position.add(p[2].position.subtract(q[2].position).multiply(i)).data);
-      controlNet.points[i][3] = new ControlPoint(...p[3].position.add(p[3].position.subtract(q[3].position).multiply(i)).data);
-    }
-
-    for (let i = 1; i < 4; ++i) {
-      for (let j = 0; j < 4; ++j) {
-        controlNet.points[i][j].parentNet = [controlNet];
-      }
-    }
-
-    if (update) {
-      extendableNet.neighbours.S = controlNet;
-      controlNet.neighbours.N = extendableNet;
-
-      controlNet.updatePatch();
-      controlNets.push(controlNet);
-      addPatch(`Patch${controlNets.length}`, controlNets.length - 1);
-    }
-
-    return controlNet;
-  } else if (direction == 'W') {
-    if (extendableNet.neighbours.W && update) {
-      return;
-    }
-    const controlNet = new ControlNet(update);
-    const p = [extendableNet.points[0][0], extendableNet.points[1][0], extendableNet.points[2][0], extendableNet.points[3][0]];
-    const q = _.cloneDeep([extendableNet.points[0][1], extendableNet.points[1][1], extendableNet.points[2][1], extendableNet.points[3][1]]);
-
-    controlNet.points[0][3] = p[0];
-    controlNet.points[1][3] = p[1];
-    controlNet.points[2][3] = p[2];
-    controlNet.points[3][3] = p[3];
-
-    controlNet.points[0][3].parentNet.push(controlNet);
-    controlNet.points[1][3].parentNet.push(controlNet);
-    controlNet.points[2][3].parentNet.push(controlNet);
-    controlNet.points[3][3].parentNet.push(controlNet);
-
-    for (let i = 1; i < 4; ++i) {
-      controlNet.points[0][3 - i] = new ControlPoint(...p[0].position.add(p[0].position.subtract(q[0].position).multiply(i)).data);
-      controlNet.points[1][3 - i] = new ControlPoint(...p[1].position.add(p[1].position.subtract(q[1].position).multiply(i)).data);
-      controlNet.points[2][3 - i] = new ControlPoint(...p[2].position.add(p[2].position.subtract(q[2].position).multiply(i)).data);
-      controlNet.points[3][3 - i] = new ControlPoint(...p[3].position.add(p[3].position.subtract(q[3].position).multiply(i)).data);
-    }
-
-    for (let i = 0; i < 4; ++i) {
-      for (let j = 0; j < 3; ++j) {
-        controlNet.points[i][j].parentNet = [controlNet];
-      }
-    }
-
-    if (update) {
-      extendableNet.neighbours.W = controlNet;
-      controlNet.neighbours.E = extendableNet;
-
-      controlNet.updatePatch();
-      controlNets.push(controlNet);
-      addPatch(`Patch${controlNets.length}`, controlNets.length - 1);
-    }
-
-    return controlNet;
-
-  } else if (direction == 'E') {
-    if (extendableNet.neighbours.E && update) {
-      return;
-    }
-
-    const controlNet = new ControlNet(update);
-    const p = [extendableNet.points[0][3], extendableNet.points[1][3], extendableNet.points[2][3], extendableNet.points[3][3]];
-    const q = _.cloneDeep([extendableNet.points[0][2], extendableNet.points[1][2], extendableNet.points[2][2], extendableNet.points[3][2]]);
-
-    controlNet.points[0][0] = p[0];
-    controlNet.points[1][0] = p[1];
-    controlNet.points[2][0] = p[2];
-    controlNet.points[3][0] = p[3];
-
-    controlNet.points[0][0].parentNet.push(controlNet);
-    controlNet.points[1][0].parentNet.push(controlNet);
-    controlNet.points[2][0].parentNet.push(controlNet);
-    controlNet.points[3][0].parentNet.push(controlNet);
-
-    for (let i = 1; i < 4; ++i) {
-      controlNet.points[0][i] = new ControlPoint(...p[0].position.add(p[0].position.subtract(q[0].position).multiply(i)).data);
-      controlNet.points[1][i] = new ControlPoint(...p[1].position.add(p[1].position.subtract(q[1].position).multiply(i)).data);
-      controlNet.points[2][i] = new ControlPoint(...p[2].position.add(p[2].position.subtract(q[2].position).multiply(i)).data);
-      controlNet.points[3][i] = new ControlPoint(...p[3].position.add(p[3].position.subtract(q[3].position).multiply(i)).data);
-    }
-
-    for (let i = 0; i < 4; ++i) {
-      for (let j = 1; j < 4; ++j) {
-        controlNet.points[i][j].parentNet = [controlNet];
-      }
-    }
-
-    if (update) {
-      extendableNet.neighbours.E = controlNet;
-      controlNet.neighbours.W = extendableNet;
-      controlNet.updatePatch();
-      controlNets.push(controlNet);
-      addPatch(`Patch${controlNets.length}`, controlNets.length - 1);
-    }
-
-    return controlNet;
-
-  } else if (direction == 'NE') {
-    if (extendableNet.neighbours.NE) {
-      return;
-    }
-
-    const NORTH = extendPatch('N', extendableNet, false);
-    const controlNet = extendPatch('E', NORTH, false);
-
-    if (update) {
-      extendableNet.neighbours.NE = controlNet;
-      controlNet.neighbours.SW = extendableNet;
-      controlNet.updatePatch();
-      controlNets.push(controlNet);
-      addPatch(`Patch${controlNets.length}`, controlNets.length - 1);
-    }
-
-    return controlNet;
-  } else if (direction == 'NW') {
-    if (extendableNet.neighbours.NW) {
-      return;
-    }
-
-    const NORTH = extendPatch('N', extendableNet, false);
-    const controlNet = extendPatch('W', NORTH, false);
-
-    if (update) {
-      extendableNet.neighbours.NW = controlNet;
-      controlNet.neighbours.SE = extendableNet;
-      controlNet.updatePatch();
-      controlNets.push(controlNet);
-      addPatch(`Patch${controlNets.length}`, controlNets.length - 1);
-    }
-  } else if (direction == 'SW') {
-    if (extendableNet.neighbours.SW) {
-      return;
-    }
-
-    const NORTH = extendPatch('S', extendableNet, false);
-    const controlNet = extendPatch('W', NORTH, false);
-
-    if (update) {
-      extendableNet.neighbours.SW = controlNet;
-      controlNet.neighbours.NE = extendableNet;
-      controlNet.updatePatch();
-      controlNets.push(controlNet);
-      addPatch(`Patch${controlNets.length}`, controlNets.length - 1);
-    }
-  } else if (direction == 'SE') {
-    if (extendableNet.neighbours.SE) {
-      return;
-    }
-
-    const NORTH = extendPatch('S', extendableNet, false);
-    const controlNet = extendPatch('E', NORTH, false);
-
-    if (update) {
-      extendableNet.neighbours.SE = controlNet;
-      controlNet.neighbours.NW = extendableNet;
-      controlNet.updatePatch();
-      controlNets.push(controlNet);
-      addPatch(`Patch${controlNets.length}`, controlNets.length - 1);
-    }
-  }
+  controlNets.forEach((value, index) => addPatch(`Patch${index + 1}`, index));
 }
 
 function addPatch(patchName, index) {
@@ -688,6 +591,133 @@ function addPatch(patchName, index) {
     self.addClass('selected');
     const index = parseInt(self.data('index'), 10);
     fpsCamera.eyeVector = controlNets[index].image.calculateCenter();
+    fpsCamera.updateView();
     selectedNet = controlNets[index];
+  });
+  $('.patch-element').unbind('contextmenu').contextmenu((event1) => {
+    event1.preventDefault();
+    event1.stopImmediatePropagation();
+
+    const self = $(event1.target);
+    const index = parseInt(self.attr('id'), 10);
+
+    controlNets[index].removeFromNeighbours();
+    controlNets = controlNets.filter((val, i) => i !== index);
+    self.remove();
+
+    $('#patches').html('');
+
+    controlNets.forEach((value, index) => addPatch(`Patch${index + 1}`, index));
+  });
+
+  // for (let i = 0; i < controlNets.length; ++i) {
+  //   const net1 = controlNets[i];
+  //   const arrPoints1 = net1.arrPoints;
+  //   let update = false;
+  //   for (let j = 0; j < arrPoints1.length; ++j) {
+  //     const point1 = arrPoints1[j];
+  //     for (let k = 0; k < controlNets.length; ++k) {
+  //       const net2 = controlNets[k];
+
+  //       if (net2 != net1) {
+  //         const arrPoints2 = net2.arrPoints;
+
+  //         for (let l = 0; l < arrPoints2.length; ++l) {
+  //           const point2 = arrPoints2[l];
+
+  //           if (point1 != point2) {
+  //             if (point1.position.distance(point2.position) < 0.2) {
+  //               net1.points[parseInt(j / 4)][j % 4] = point2;
+  //               point1.parentNet.push(net1);
+  //               update = true;
+  //             }
+  //           }
+  //         }
+  //       }
+  //     }
+  //   }
+
+  //   if (update) {
+  //     net1.updatePatch();
+  //   }
+  // }
+}
+
+function generateInsertTable() {
+  const tableDOM = $('<table></table>');
+  const tbodyDOM = $('<tbody></tbody>');
+  for (let i = 0; i < 4; ++i) {
+    for (let j = 0; j < 4; ++j) {
+      const rowDOM = $('<tr></tr>');
+      for (let k = 0; k < 3; ++k) {
+        const colDOM = $('<td></td>');
+        i / 4 + 2, Math.random() / 4, j / 4
+        if (k == 0) {
+          const inputDOM = $(`<input id="${i}${j}${k}" type="text" value="${i / 4}">`);
+          colDOM.append(inputDOM);
+          rowDOM.append(colDOM);
+        } else if (k == 1) {
+          const inputDOM = $(`<input id="${i}${j}${k}" type="text" value="${Math.random()}">`);
+          colDOM.append(inputDOM);
+          rowDOM.append(colDOM);
+        } else if (k == 2) {
+          const inputDOM = $(`<input id="${i}${j}${k}" type="text" value="${j / 4}">`);
+          colDOM.append(inputDOM);
+          rowDOM.append(colDOM);
+        }
+
+      }
+      tbodyDOM.append(rowDOM);
+    }
+  }
+
+  $('#insert').html('');
+  tableDOM.append(tbodyDOM);
+  $('#insert').append(tableDOM);
+  const insertButton = $('<button>Insert</button>');
+
+  insertButton.unbind('click').click(() => {
+    let coordinates = new Array(4).fill().map(row => new Array(4).fill());
+    for (let i = 0; i < 4; ++i) {
+      for (let j = 0; j < 4; ++j) {
+        const x = parseFloat($(`#${i}${j}0`).val());
+        const y = parseFloat($(`#${i}${j}1`).val());
+        const z = parseFloat($(`#${i}${j}2`).val());
+
+        coordinates[i][j] = new DCoordinate3(x, y, z);
+      }
+    }
+
+    const newNet = ControlNet.insert(coordinates);
+    newNet.updatePatch();
+    controlNets.push(newNet);
+    addPatch(`Patch${controlNets.length}`, controlNets.length - 1);
+  });
+
+  $('#insert').append(insertButton);
+}
+
+function generateDropdown(dropdown) {
+  dropdown.html('');
+
+  for (let i = 0; i < controlNets.length; ++i) {
+    if (selectedNet != controlNets[i]) {
+      const option = $(`<option class="join-option" value="${i}">Patch${i + 1}</option>`);
+      dropdown.append(option);
+    }
+  }
+
+  dropdown.unbind('change').change(() => {
+    const index = parseInt(dropdown.val(), 10);
+    if (!Number.isNaN(index)) {
+      otherNet = controlNets[index];
+    }
+  });
+
+  dropdown.unbind('hover').hover(() => {
+    const index = parseInt(dropdown.val(), 10);
+    if (!Number.isNaN(index)) {
+      otherNet = controlNets[index];
+    }
   });
 }

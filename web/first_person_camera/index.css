@@ -85,11 +85,11 @@ body {
 }
 
 .activity-list > button {
-  width: 33%;
+  width: 20%;
   height: 100%;
   margin: 0px;
   float: left;
-  font-size: 16pt;
+  font-size: 13pt;
   background: none;
   border: 1px solid white;
   outline: none;
@@ -129,6 +129,7 @@ body {
   height: 70%;
   margin: auto;
   border: 1px solid white;
+  overflow-y: scroll;
 }
 
 .activity > table {
@@ -153,4 +154,16 @@ body {
 .disabled {
   background: black !important;
   cursor: default !important; 
+}
+
+#insert > table > tbody > tr > td {
+  width: 33%;
+}
+
+#insert > table > tbody > tr > td > input {
+  width: 100%;
+}
+
+#insert {
+  overflow-y: scroll;
 }
