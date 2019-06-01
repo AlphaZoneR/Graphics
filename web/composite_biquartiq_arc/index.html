@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://necolas.github.io/normalize.css/8.0.1/normalize.css">
+    <link rel="stylesheet" href="index.css">
+    <title>Graphics</title>
+</head>
+
+<body>
+    <canvas id="drawable"></canvas>
+
+    <div class="editor">
+        <label for="patch-list">Patches</label>
+        <div class="patch-list" id="patches">
+        </div>
+        <label for="patch-list">Function</label>
+        <div class="activity-menu">
+            <div class="activity-list">
+                <button class="activity-element">Insert</button>
+                <button class="selected activity-element">Extend</button>
+                <button class="activity-element">Merge</button>
+                <button class="activity-element">Join</button>
+                <button class="activity-element">Edit</button>
+            </div>
+
+            <div class="activity" id="insert" hidden>
+            </div>
+            <div class="activity" id="extend">
+                <table>
+                    <tr>
+                        <td class="disabled">NW</td>
+                        <td class="extend-direction">N</td>
+                        <td class="disabled">NE</td>
+                    </tr>
+                    <tr>
+                        <td class="disabled">W</td>
+                        <td class="disabled"></td>
+                        <td class="disabled">E</td>
+                    </tr>
+                    <tr>
+                        <td class="disabled">SW</td>
+                        <td class="extend-direction">S</td>
+                        <td class="disabled">SE</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="activity" hidden id="merge">
+                <table id="selected-merge-direction">
+                    <tr>
+                        <td class="disabled">NW</td>
+                        <td class="merge-direction-selected">N</td>
+                        <td class="disabled">NE</td>
+                    </tr>
+                    <tr>
+                        <td class="disabled">W</td>
+                        <td class="disabled"></td>
+                        <td class="disabled">E</td>
+                    </tr>
+                    <tr>
+                        <td class="disabled">SW</td>
+                        <td class="merge-direction-selected">S</td>
+                        <td class="disabled">SE</td>
+                    </tr>
+                </table>
+                <select id="merge-dropdown"> </select>
+                <table id="other-merge-direction">
+                    <tr>
+                        <td class="disabled">NW</td>
+                        <td class="merge-direction-other">N</td>
+                        <td class="disabled">NE</td>
+                    </tr>
+                    <tr>
+                        <td class="disabled">W</td>
+                        <td class="disabled"></td>
+                        <td class="disabled">E</td>
+                    </tr>
+                    <tr>
+                        <td class="disabled">SW</td>
+                        <td class="merge-direction-other">S</td>
+                        <td class="disabled">SE</td>
+                    </tr>
+                </table>
+
+                <button id="merge-button">Merge</button>
+            </div>
+            <div class="activity" hidden id="join">
+                <table id="selected-join-direction">
+                    <tr>
+                        <td class="disabled">NW</td>
+                        <td class="join-direction-selected">N</td>
+                        <td class="disabled">NE</td>
+                    </tr>
+                    <tr>
+                        <td class="disabled">W</td>
+                        <td class="disabled"></td>
+                        <td class="disabled">E</td>
+                    </tr>
+                    <tr>
+                        <td class="disabled">SW</td>
+                        <td class="join-direction-selected">S</td>
+                        <td class="disabled">SE</td>
+                    </tr>
+                </table>
+                <select id="join-dropdown">
+                    <option>Patch1</option>
+                </select>
+                <table id="other-join-direction">
+                    <tr>
+                        <td class="disabled">NW</td>
+                        <td class="join-direction-other">N</td>
+                        <td class="disabled">NE</td>
+                    </tr>
+                    <tr>
+                        <td class="disabled">W</td>
+                        <td class="disabled"></td>
+                        <td class="disabled">E</td>
+                    </tr>
+                    <tr>
+                        <td class="disabled">SW</td>
+                        <td class="join-direction-other">S</td>
+                        <td class="disabled">SE</td>
+                    </tr>
+                </table>
+
+                <button id="join-button">Join</button>
+            </div>
+
+            <div class="activity" hidden id="edit">
+                <label for="r">Red</label>
+                <input class="color-slider" id="r" type="range" min="0" max="255" value="254">
+                <label for="g">Green</label>
+                <input class="color-slider" id="g" type="range" min="0" max="255" value="254">
+                <label for="b">Blue</label>
+                <input class="color-slider" id="b" type="range" min="0" max="255" value="254">
+                <div class="color-choice"></div>
+
+                <button id="apply-color">Apply</button>
+            </div>
+        </div>
+        <label for="transform-menu">Transform</label>
+        <div class="transform-menu">
+            <button class="transform-element selected">Points</button>
+            <button class="transform-element">Arcs</button>
+        </div>
+    </div>
+
+    <script src="/lodash.js"></script>
+    <script src="/gl-matrix.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="/Core/Texture2D.js"></script>
+    <script src="/Core/DCoordinates.js"></script>
+    <script src="/Core/Matrix.js"></script>
+    <script src="/Core/ColumnMatrix.js"></script>
+    <script src="/Core/RowMatrix.js"></script>
+    <script src="/Core/TriangularMatrix.js"></script>
+    <script src="/Core/RealSquareMatrix.js"></script>
+    <script src="/Core/HCoordinate3.js"></script>
+    <script src="GenericCurve3.js"></script>
+    <script src="/Core/ParametricCurve3.js"></script>
+    <script src="/Core/ParametricCurves.js"></script>
+    <script src="/Core/TriangularFace.js"></script>
+    <script src="/Core/TCoordinate4.js"></script>
+    <script src="/Core/Color4.js"></script>
+    <script src="/Core/Material.js"></script>
+    <script src="TriangulatedMesh3.js"></script>
+    <script src="/Core/ParametricSurface3.js"></script>
+    <script src="/Core/Utils.js"></script>
+    <script src="/Core/Derivatives.js"></script>
+    <script src="/Core/LinearCombination3.js"></script>
+    <script src="/Core/CyclicCurve3.js"></script>
+    <script src="/Core/TensorProductSurface.js"></script>
+    <script src="BiquarticArc3.js"></script>
+    <script src="FPSCamera.js"></script>
+    <script src="Crosshair.js"></script>
+    <script src="ControlPoint.js"></script>
+    <script src="ControlPolygone.js"></script>
+    <script src="TransformVectors.js"></script>
+    <script src="index.js"></script>
+</body>
+
+</html>

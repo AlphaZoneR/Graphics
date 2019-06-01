@@ -150,11 +150,13 @@ class LinearCombination3 {
 
     for (let order = 0; order < maxOrderOfDerivatives + 1; ++order) {
       if (!this.calculateDerivatives(maxOrderOfDerivatives, this.uMin, derivatives)) {
+        console.log('Failed to calculate derivatives! 1');
         return null;
       }
       result.derivative.data[order][0] = _.cloneDeep(derivatives.at(order));
 
       if (!this.calculateDerivatives(maxOrderOfDerivatives, this.uMax, derivatives)) {
+        console.log('Failed to calculate derivatives! 2');
         return null;
       }
       result.derivative.data[order][divPointCount - 1] = _.cloneDeep(derivatives.at(order));
