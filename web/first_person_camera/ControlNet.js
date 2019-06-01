@@ -17,6 +17,8 @@ class ControlNet {
     }
 
     this.defaultMaterial = MatFBBrass;
+    this._useTexture = false;
+    this._texture = textures['terrain1'];
 
     this.loaded = false;
     this.program = null;
@@ -60,6 +62,24 @@ class ControlNet {
     if (this.linesVbo) {
       globalThis.gl.deleteBuffer(this.linesVbo);
     }
+  }
+
+  set useTexture(boolean) {
+    this.image.useTexture = boolean;
+    if (boolean) {
+      this.defaultMaterial = MatFBPearl;
+      this.image.mat = MatFBPearl;
+    }
+    this._useTexture = boolean;
+  }
+
+  get useTexture() {
+    return this._useTexture;
+  }
+
+  set texture(text) {
+    this._texture = text;
+    this.image.texture = text;
   }
 
   get controlPointMeshes() {
@@ -119,14 +139,16 @@ class ControlNet {
     gl.bindBuffer(globalThis.gl.ARRAY_BUFFER, null);
   }
 
-  render(viewMatrix) {
-    for (let i = 0; i < 4; ++i) {
-      for (let j = 0; j < 4; ++j) {
-        this.points[i][j].render(viewMatrix);
+  render(viewMatrix, showControlNet) {
+    if (showControlNet) {
+      for (let i = 0; i < 4; ++i) {
+        for (let j = 0; j < 4; ++j) {
+          this.points[i][j].render(viewMatrix);
+        }
       }
-    }
 
-    this._renderLines(viewMatrix);
+      this._renderLines(viewMatrix);
+    }
     this.image.render(viewMatrix, globalThis.gl.TRIANGLES);
   }
 
@@ -148,6 +170,9 @@ class ControlNet {
     this.image = this.patch.generateImage(20, 20, globalThis.gl.STATIC_DRAW);
     this.image.updateVertexBufferObjects(globalThis.gl.STATIC_DRAW);
     this.image.controlNet = this;
+    this.image.mat = this.defaultMaterial;
+    this.image.useTexture = this._useTexture;
+    this.image.texture = this._texture;
   }
 
   highlightDirection(direction) {

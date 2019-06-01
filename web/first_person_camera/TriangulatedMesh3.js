@@ -25,6 +25,8 @@ class TriangulatedMesh3 {
       this.boundingBox = null;
       this.center = null;
       this.moved = true;
+      this._useTexture = 0;
+      this.texture = null;
 
       if (globalThis.triangulatedProgram) {
         this.program = globalThis.triangulatedProgram;
@@ -56,12 +58,15 @@ class TriangulatedMesh3 {
         this.viewLocation = gl.getUniformLocation(this.program, 'u_view');
         this.projectionLocation = gl.getUniformLocation(this.program, 'u_projection');
         this.scaleLocation = gl.getUniformLocation(this.program, 'u_scale');
+        this.samplerLocation = gl.getUniformLocation(this.program, 'u_sampler');
+        this.useTextureLocation = gl.getUniformLocation(this.program, 'u_use_texture');
 
         this.vertexLocation = gl.getAttribLocation(this.program, 'position');
         this.normalLocation = gl.getAttribLocation(this.program, 'normal');
+        this.texLocation = gl.getAttribLocation(this.program, 'tex');
         this.loaded = true;
       } else {
-        glProgramFrom('/shaders/agoston.vert', '/shaders/agoston.frag')
+        glProgramFrom('/shaders/agoston.1.vert', '/shaders/agoston.1.frag')
           .then((program) => {
             this.program = program;
             globalThis.triangulatedProgram = program;
@@ -93,9 +98,12 @@ class TriangulatedMesh3 {
             this.viewLocation = gl.getUniformLocation(this.program, 'u_view');
             this.projectionLocation = gl.getUniformLocation(this.program, 'u_projection');
             this.scaleLocation = gl.getUniformLocation(this.program, 'u_scale');
+            this.samplerLocation = gl.getUniformLocation(this.program, 'u_sampler');
+            this.useTextureLocation = gl.getUniformLocation(this.program, 'u_use_texture');
 
             this.vertexLocation = gl.getAttribLocation(this.program, 'position');
             this.normalLocation = gl.getAttribLocation(this.program, 'normal');
+            this.texLocation = gl.getAttribLocation(this.program, 'tex');
             this.loaded = true;
           });
       }
@@ -221,7 +229,6 @@ class TriangulatedMesh3 {
 
       gl.useProgram(this.program);
 
-
       gl.uniform4fv(this.light.ambientLoc, [0.4, 0.4, 0.4, 1.0]);
       gl.uniform4fv(this.light.diffuseLoc, [0.8, 0.8, 0.8, 1.0]);
       gl.uniform4fv(this.light.specularLoc, [1.0, 1.0, 1.0, 1.0]);
@@ -238,6 +245,7 @@ class TriangulatedMesh3 {
       gl.uniform4fv(this.backMaterial.emissionLoc, this.currMaterial.backEmissive.data);
       gl.uniform1f(this.backMaterial.shininessLoc, this.currMaterial.backShininess);
 
+      gl.uniform1i(this.useTextureLocation, this._useTexture);
 
       const cameraPos = [cos(time / 100) * scaleValue, sin(time / 100) * scaleValue, scaleValue];
       let proj = perspective(degToRad(45.0), gl.canvas.width / gl.canvas.height, 1.0, 1000.0);
@@ -264,23 +272,30 @@ class TriangulatedMesh3 {
       model = yRotate(model, degToRad(this.currentYRotate));
       model = zRotate(model, degToRad(this.currentZRotate));
 
-
-
       gl.uniformMatrix4fv(this.projectionLocation, false, proj);
       gl.uniformMatrix4fv(this.viewLocation, false, lookat);
       gl.uniformMatrix4fv(this.modelLocation, false, model);
       gl.uniform1f(this.scaleLocation, this.scale);
 
       // gl.uniform3fv(this.light.positionLoc, [cos(time / 100) * (scaleValue - 1), sin(time / 100) * (scaleValue - 1), (scaleValue - 1)]);
-
+    
       gl.enableVertexAttribArray(this.vertexLocation);
       gl.enableVertexAttribArray(this.normalLocation);
+      
 
       gl.bindBuffer(gl.ARRAY_BUFFER, this.vboNormals);
       gl.vertexAttribPointer(this.normalLocation, 3, gl.FLOAT, false, 0, 0);
 
       gl.bindBuffer(gl.ARRAY_BUFFER, this.vboVertices);
       gl.vertexAttribPointer(this.vertexLocation, 3, gl.FLOAT, false, 0, 0);
+
+      if (this._useTexture == 1) {
+        gl.enableVertexAttribArray(this.texLocation);
+        gl.bindBuffer(gl.ARRAY_BUFFER, this.vboTexCoordinates);
+        gl.vertexAttribPointer(this.texLocation, 4, gl.FLOAT, false, 0, 0);
+        this.texture.use();
+        gl.uniform1i(this.samplerLocation, 0);
+      }
 
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.vboIndices);
       gl.drawElements(renderMode, 3 * this.face.length, gl.UNSIGNED_INT, 0);
@@ -357,6 +372,18 @@ class TriangulatedMesh3 {
     this.boundingBox = [xmin, xmax, ymin, ymax, zmin, zmax];
     this.moved = false;
     return [xmin, xmax, ymin, ymax, zmin, zmax];
+  }
+
+  set useTexture(boolean) {
+    if (boolean === true) {
+      this._useTexture = 1;
+    } else {
+      this._useTexture = 0;
+    }
+  }
+
+  get useTexture() {
+    return this._useTexture == 1 ? true : false;
   }
 
   calculateCenter() {

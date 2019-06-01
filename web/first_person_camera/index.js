@@ -23,6 +23,7 @@ let mousePosition = {
   x: null,
   y: null,
 }
+
 let controlpoint = 0;
 
 let pointCountValue = 200;
@@ -48,6 +49,15 @@ let TRANSFORM_MODE = POINTS;
 let transformMode = POINTS;
 
 let escaped = false;
+
+let showControlNet = true;
+
+let textures = {
+  terrain1: new Texture2D('/textures/terrain3.jpg'),
+  terrain2: new Texture2D('/textures/terrain2.jpg'),
+  terrain3: new Texture2D('/textures/terrain1.jpg'),
+  smh1: new Texture2D('/textures/smh1.jpg'),
+}
 
 window.addEventListener('load', async (event) => {
   const canvas = document.getElementById('drawable');
@@ -131,7 +141,7 @@ window.addEventListener('load', async (event) => {
           transformVectors.move(mesh.calculateCenter().data);
         }
         selectedNet = mesh.controlNet;
-        resetContronNetColors();
+        resetControlNetColors();
       }
 
       mesh.moved = true;
@@ -161,6 +171,10 @@ window.addEventListener('load', async (event) => {
 
     if (event1.keyCode == 27) {
       escaped = true;
+    }
+
+    if (event1.keyCode == keyCode('E')) {
+      showControlNet = !showControlNet;
     }
   }
 
@@ -241,7 +255,7 @@ function drawFrame() {
   renderLines(fpsCamera.viewMatrix);
   renderBoundingBuffers(fpsCamera.viewMatrix);
 
-  controlNets.forEach(controlNet => controlNet.render(fpsCamera.viewMatrix));
+  controlNets.forEach(controlNet => controlNet.render(fpsCamera.viewMatrix, showControlNet));
   transformVectors.render(fpsCamera.viewMatrix);
   crosshair.render();
 
@@ -317,7 +331,7 @@ function resetControlPointColors() {
   everyControlPointMesh.forEach(mesh => mesh.mat = MatFBRuby);
 }
 
-function resetContronNetColors() {
+function resetControlNetColors() {
   controlNets.forEach(net => net.image.mat = net.defaultMaterial);
 }
 
@@ -567,8 +581,16 @@ window.addEventListener('load', (event) => {
         selectedNet.defaultMaterial = MatFBTurquoise;
       }
 
-      resetContronNetColors();
+      selectedNet.useTexture = false;
+      resetControlNetColors();
     }
+  });
+
+  $('#texture-select').change((event) => {
+    const texture = $(event.target).val();
+    console.log('here');
+    selectedNet.useTexture = true;
+    selectedNet.texture = textures[texture];
   });
 });
 
