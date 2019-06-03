@@ -77,7 +77,7 @@ class GenericCurve3 {
             if (!this.vboDerivative.at(d)) {
                 for (let i = 0; i < d; ++i) {
                     globalThis.gl.deleteBuffer(this.vboDerivative.get(i));
-                    this.vboDerivative.set(d, i);
+                    this.vboDerivative.set(d, null);
                 }
                 return false;
             }
@@ -114,6 +114,7 @@ class GenericCurve3 {
         }
 
         globalThis.gl.bindBuffer(GL.ARRAY_BUFFER, null);
+        console.log(this.vboDerivative);
     }
 
     setDerivative(order, index, d) {

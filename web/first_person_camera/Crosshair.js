@@ -49,7 +49,9 @@ class Crosshair {
 
         globalThis.gl.bindBuffer(GL.ARRAY_BUFFER, this.dataVbo);
         globalThis.gl.vertexAttribPointer(this.vertexLocation, 2, WebGLRenderingContext.FLOAT, true, 0, 0);
+        globalThis.gl.disable(GL.DEPTH_TEST);
         globalThis.gl.drawArrays(GL.LINES, 0, 4);
+        globalThis.gl.enable(GL.DEPTH_TEST);
 
         globalThis.gl.bindBuffer(GL.ARRAY_BUFFER, null);
         globalThis.gl.useProgram(null);

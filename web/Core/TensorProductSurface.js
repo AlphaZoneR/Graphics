@@ -154,11 +154,11 @@ class TensorProductSurface {
       let u = this.uMin + i * ((this.uMax - this.uMin) / (isoLineCount - 1));
       result.set(i, new GenericCurve3(maximumOrderOfDerivatives, divPointCount));
       let v = this.vMin;
-      for (let k = i; k < divPointCount; ++k) {
+      for (let k = 0; k < divPointCount; ++k) {
         const pDerivs = new PartialDerivatives(maximumOrderOfDerivatives);
         this.calculatePartialDerivatives(maximumOrderOfDerivatives, u, v, pDerivs);
 
-        for (let order = 0; order < maximumOrderOfDerivatives; ++order) {
+        for (let order = 0; order < maximumOrderOfDerivatives + 1; ++order) {
           result.at(i).derivative.data[order][k] = _.cloneDeep(pDerivs.data[order][order]);
         }
 
@@ -192,7 +192,7 @@ class TensorProductSurface {
       result.set(i, new GenericCurve3(maximumOrderOfDerivatives, divPointCount));
       let u = this.uMin;
 
-      for (let i = k; k < divPointCount; ++k) {
+      for (let k = 0; k < divPointCount; ++k) {
         const pDerivs = new PartialDerivatives(maximumOrderOfDerivatives);
         this.calculatePartialDerivatives(maximumOrderOfDerivatives, u, v, pDerivs);
 

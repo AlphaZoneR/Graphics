@@ -9,7 +9,7 @@ class ControlPolygone {
 
     if (generate) {
       this.arc = this.generateArc();
-      this.image = this.arc.generateImage(2, 30, globalThis.gl.STATIC_DRAW);
+      this.image = this.arc.generateImage(2, 50, globalThis.gl.STATIC_DRAW);
       this.image.updateVertexBufferObjects(globalThis.gl.STATIC_DRAW);
       this.image.controlPoly = this;
     }
@@ -18,6 +18,8 @@ class ControlPolygone {
 
     this.loaded = false;
     this.program = null;
+    this.showd1 = false;
+    this.showd2 = false;
 
     if (globalThis.netProgram) {
       this.program = globalThis.netProgram;
@@ -110,7 +112,18 @@ class ControlPolygone {
 
       this._renderLines(viewMatrix);
     }
+    this.image.color = this._defaultColor;
     this.image.renderDerivatives(viewMatrix, 0, globalThis.gl.LINE_STRIP);
+
+    if (this.showd1) {
+      this.image.color = [1, 0, 0, 1];
+      this.image.renderDerivatives(viewMatrix, 1, globalThis.gl.LINES);
+    }
+
+    if (this.showd2) {
+      this.image.color = [0, 0, 1, 1];
+      this.image.renderDerivatives(viewMatrix, 2, globalThis.gl.LINES);
+    }
   }
 
   generateArc() {
@@ -126,7 +139,8 @@ class ControlPolygone {
   updateArc() {
     this.generateLinesVBO();
     this.arc = this.generateArc();
-    this.image = this.arc.generateImage(2, 20, globalThis.gl.STATIC_DRAW);
+    this.image = this.arc.generateImage(2, 50, globalThis.gl.STATIC_DRAW);
+    this.image.derivative.data[1][19] = new DCoordinate3(0, 0, 0);
     this.image.updateVertexBufferObjects(globalThis.gl.STATIC_DRAW);
     this.image.controlPoly = this;
     this.image.color = this._defaultColor;
@@ -135,6 +149,10 @@ class ControlPolygone {
   set defaultColor(color) {
     this._defaultColor = color;
     this.image.color = color;
+  }
+
+  get defaultColor() {
+    return this._defaultColor;
   }
 
   highlightDirection(direction) {
@@ -310,6 +328,8 @@ class ControlPolygone {
 
     thisFirstPoint.parentPoly.push(newArc);
     otherFirstPoint.parentPoly.push(newArc);
+    otherSecondPoint.parentPoly = [newArc];
+    thisSecondPoint.parentPoly = [newArc];
 
     if (thisDirection == 'N') {
       newArc.points[3] = thisFirstPoint;
@@ -386,6 +406,11 @@ class ControlPolygone {
       otherFirstPoint = _.cloneDeep(otherArc.points[3]);
       otherSecondPoint = _.cloneDeep(otherArc.points[2]);
     }
+
+    otherFirstPoint.mesh.moved = true;
+    otherSecondPoint.mesh.moved = true;
+    thisFirstPoint.mesh.moved = true;
+    thisSecondPoint.mesh.moved = true;
 
     if (thisDirection == 'N') {
       this.points[3] = thisFirstPoint;

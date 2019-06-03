@@ -37,8 +37,8 @@ let time = 0;
 
 let draggedMesh = null;
 
-let controlPolygones = [];
-let selectedPolygone = null;
+let controlPolynomes = [];
+let selectedPolynome = null;
 let otherPolygone = null;
 
 const POINTS = 0;
@@ -88,10 +88,10 @@ window.addEventListener('load', async (event) => {
     let everyControlPointMesh = [];
 
     if (TRANSFORM_MODE == POINTS) {
-      everyControlPointMesh = controlPolygones.map(controlPoly => controlPoly.controlPointMeshes).flat();
+      everyControlPointMesh = controlPolynomes.map(controlPoly => controlPoly.controlPointMeshes).flat();
       everyControlPointMesh.forEach(mesh => mesh.mat = MatFBRuby);
     } else if (TRANSFORM_MODE == PATCHES) {
-      everyControlPointMesh = controlPolygones.map(controlPoly => controlPoly.image);
+      everyControlPointMesh = controlPolynomes.map(controlPoly => controlPoly.image);
     }
 
     let [mesh, distance, collisionPoint] = raytrace(everyControlPointMesh);
@@ -104,7 +104,7 @@ window.addEventListener('load', async (event) => {
         mesh.controlPoly.color();
         mesh.mat = MatFBPearl;
 
-        selectPatchById(controlPolygones.indexOf(mesh.controlPoly));
+        selectPatchById(controlPolynomes.indexOf(mesh.controlPoly));
       }
 
       transformVectors.move(mesh.translateVector);
@@ -135,7 +135,7 @@ window.addEventListener('load', async (event) => {
           mesh.controlPoly.move(...endPoint.subtract(collisionPoint).data);
           transformVectors.move(mesh.calculateCenter().data);
         }
-        selectedPolygone = mesh.controlPoly;
+        selectedPolynome = mesh.controlPoly;
         resetcontrolPolyColors();
       }
 
@@ -177,8 +177,8 @@ window.addEventListener('load', async (event) => {
     keyboard[event1.keyCode] = false;
   }
 
-  var ext1 = gl.getExtension('OES_element_index_uint');
-  var ext2 = gl.getExtension('OES_standard_derivatives');
+  const ext1 = gl.getExtension('OES_element_index_uint');
+  const ext2 = gl.getExtension('OES_standard_derivatives');
 
   prog = await glProgramFrom('vert.glsl', 'frag.glsl').catch(error => console.log(error.message));
 
@@ -194,8 +194,8 @@ window.addEventListener('load', async (event) => {
 
   canvas.requestPointerLock();
 
-  controlPolygones.push(new ControlPolygone());
-  selectedPolygone = controlPolygones[0];
+  controlPolynomes.push(new ControlPolygone());
+  selectedPolynome = controlPolynomes[0];
   addArc('Arc1', 0);
 
   transformVectors = new TransformVectors(1, 1, 1);
@@ -250,7 +250,7 @@ function drawFrame() {
   renderLines(fpsCamera.viewMatrix);
   renderBoundingBuffers(fpsCamera.viewMatrix);
 
-  controlPolygones.forEach(controlPoly => controlPoly.render(fpsCamera.viewMatrix, showcontrolPoly));
+  controlPolynomes.forEach(controlPoly => controlPoly.render(fpsCamera.viewMatrix, showcontrolPoly));
   transformVectors.render(fpsCamera.viewMatrix);
   crosshair.render();
 
@@ -322,12 +322,12 @@ function renderLines(viewMatrix) {
 }
 
 function resetControlPointColors() {
-  const everyControlPointMesh = controlPolygones.map(controlPoly => controlPoly.controlPointMeshes).flat();
+  const everyControlPointMesh = controlPolynomes.map(controlPoly => controlPoly.controlPointMeshes).flat();
   everyControlPointMesh.forEach(mesh => mesh.mat = MatFBRuby);
 }
 
 function resetcontrolPolyColors() {
-  controlPolygones.forEach(net => net.image.mat = net.defaultMaterial);
+  controlPolynomes.forEach(net => net.image.mat = net.defaultMaterial);
 }
 
 function selectPatchById(id) {
@@ -432,30 +432,43 @@ window.addEventListener('load', (event) => {
       generateDropdown($('#merge-dropdown'));
     }
 
+    if (self.html().toLowerCase() == 'edit') {
+      if (selectedPolynome) {
+        $('#r').val(selectedPolynome.defaultColor[0] * 255);
+        $('#g').val(selectedPolynome.defaultColor[1] * 255);
+        $('#b').val(selectedPolynome.defaultColor[2] * 255);
+
+        $('.color-choice').css('background-color', `rgb(${selectedPolynome.defaultColor[0] * 255}, ${selectedPolynome.defaultColor[1] * 255}, ${selectedPolynome.defaultColor[2] * 255})`);
+
+        $('#showd1').prop('checked', selectedPolynome.showd1);
+        $('#showd2').prop('checked', selectedPolynome.showd2);
+      }
+    }
+
     $(`#${self.html().toLowerCase()}`).removeAttr('hidden');
   });
 
   $('.extend-direction').click((event1) => {
-    const newArc = selectedPolygone.extend($(event1.target).html());
+    const newArc = selectedPolynome.extend($(event1.target).html());
     if (newArc) {
       newArc.points.forEach((point) => {
         point.mesh.moved = true;
       })
       newArc.updateArc();
-      controlPolygones.push(newArc);
-      addArc(`Arc${controlPolygones.length}`, controlPolygones.length - 1);
+      controlPolynomes.push(newArc);
+      addArc(`Arc${controlPolynomes.length}`, controlPolynomes.length - 1);
     }
   })
 
   $('.extend-direction').mouseenter((event1) => {
     resetControlPointColors();
-    selectedPolygone.highlightDirection($(event1.target).html());
+    selectedPolynome.highlightDirection($(event1.target).html());
   });
 
   $('.join-direction-selected').mouseenter((event1) => {
     resetControlPointColors();
-    if (selectedPolygone) {
-      selectedPolygone.highlightDirection($(event1.target).html());
+    if (selectedPolynome) {
+      selectedPolynome.highlightDirection($(event1.target).html());
     }
   });
 
@@ -477,15 +490,15 @@ window.addEventListener('load', (event) => {
       return;
     }
 
-    if (!selectedPolygone || !otherPolygone) {
+    if (!selectedPolynome || !otherPolygone) {
       return;
     }
 
-    const newNet = selectedPolygone.join(otherPolygone, thisDirection, otherDirection);
+    const newNet = selectedPolynome.join(otherPolygone, thisDirection, otherDirection);
     if (newNet) {
       newNet.updateArc();
-      controlPolygones.push(newNet);
-      addArc(`Arc${controlPolygones.length}`, controlPolygones.length - 1);
+      controlPolynomes.push(newNet);
+      addArc(`Arc${controlPolynomes.length}`, controlPolynomes.length - 1);
     }
   });
 
@@ -509,15 +522,15 @@ window.addEventListener('load', (event) => {
     const r = $("#r").val();
     const g = $("#g").val();
     const b = $("#b").val();
-    if (selectedPolygone) {
-      selectedPolygone.defaultColor = [r / 255, g / 255, b / 255, 1.0];
+    if (selectedPolynome) {
+      selectedPolynome.defaultColor = [r / 255, g / 255, b / 255, 1.0];
     }
   })
 
   $('.merge-direction-selected').mouseenter((event1) => {
     resetControlPointColors();
-    if (selectedPolygone) {
-      selectedPolygone.highlightDirection($(event1.target).html());
+    if (selectedPolynome) {
+      selectedPolynome.highlightDirection($(event1.target).html());
     }
   });
 
@@ -539,11 +552,11 @@ window.addEventListener('load', (event) => {
       return;
     }
 
-    if (!selectedPolygone || !otherPolygone) {
+    if (!selectedPolynome || !otherPolygone) {
       return;
     }
 
-    const newNet = selectedPolygone.merge(otherPolygone, thisDirection, otherDirection);
+    const newNet = selectedPolynome.merge(otherPolygone, thisDirection, otherDirection);
     if (newNet) {
       newNet.updateArc();
       deleteArc(otherPolygone);
@@ -556,6 +569,20 @@ window.addEventListener('load', (event) => {
       otherPolygone.highlightDirection($(event1.target).html());
     }
   });
+
+  $('#showd1').click((event) => {
+    const self = $(event.target);
+    if (selectedPolynome) {
+      selectedPolynome.showd1 = self.prop('checked');
+    }
+  });
+
+  $('#showd2').click((event) => {
+    const self = $(event.target);
+    if (selectedPolynome) {
+      selectedPolynome.showd2 = self.prop('checked');
+    }
+  })
 
   $('.extend-direction').mouseleave((event1) => {
     resetControlPointColors();
@@ -575,24 +602,24 @@ window.addEventListener('load', (event) => {
 
   $('#material-select').change((event) => {
     const material = $(event.target).val();
-    if (selectedPolygone) {
+    if (selectedPolynome) {
       if (material == 'emerald') {
-        selectedPolygone.defaultMaterial = MatFBEmerald;
+        selectedPolynome.defaultMaterial = MatFBEmerald;
       } else if (material == 'brass') {
-        selectedPolygone.defaultMaterial = MatFBBrass;
+        selectedPolynome.defaultMaterial = MatFBBrass;
       } else if (material == 'gold') {
-        selectedPolygone.defaultMaterial = MatFBGold;
+        selectedPolynome.defaultMaterial = MatFBGold;
       } else if (material == 'ruby') {
-        selectedPolygone.defaultMaterial = MatFBRuby;
+        selectedPolynome.defaultMaterial = MatFBRuby;
       } else if (material == 'pearl') {
-        selectedPolygone.defaultMaterial = MatFBPearl;
+        selectedPolynome.defaultMaterial = MatFBPearl;
       } else if (material == 'silver') {
-        selectedPolygone.defaultMaterial = MatFBSilver;
+        selectedPolynome.defaultMaterial = MatFBSilver;
       } else if (material == 'turquoise') {
-        selectedPolygone.defaultMaterial = MatFBTurquoise;
+        selectedPolynome.defaultMaterial = MatFBTurquoise;
       }
 
-      selectedPolygone.useTexture = false;
+      selectedPolynome.useTexture = false;
       resetcontrolPolyColors();
     }
   });
@@ -600,11 +627,11 @@ window.addEventListener('load', (event) => {
 
 function deleteArc(arc) {
   arc.removeFromNeighbours();
-  const index = controlPolygones.indexOf(arc);
+  const index = controlPolynomes.indexOf(arc);
   $(`#${index}`).remove();
-  controlPolygones = controlPolygones.filter((val, i) => i !== index);
+  controlPolynomes = controlPolynomes.filter((val, i) => i !== index);
 
-  controlPolygones.forEach((value, index) => addArc(`Arc${index + 1}`, index));
+  controlPolynomes.forEach((value, index) => addArc(`Arc${index + 1}`, index));
 }
 
 function addArc(arcName, index) {
@@ -617,7 +644,8 @@ function addArc(arcName, index) {
     self.addClass('selected');
     const index = parseInt(self.data('index'), 10);
 
-    selectedPolygone = controlPolygones[index];
+    selectedPolynome = controlPolynomes[index];
+    $('.activity-element.selected').click();
   });
   $('.patch-element').unbind('contextmenu').contextmenu((event1) => {
     event1.preventDefault();
@@ -626,23 +654,23 @@ function addArc(arcName, index) {
     const self = $(event1.target);
     const index = parseInt(self.attr('id'), 10);
 
-    controlPolygones[index].removeFromNeighbours();
-    controlPolygones = controlPolygones.filter((val, i) => i !== index);
+    controlPolynomes[index].removeFromNeighbours();
+    controlPolynomes = controlPolynomes.filter((val, i) => i !== index);
     self.remove();
 
     $('#patches').html('');
 
-    controlPolygones.forEach((value, index) => addArc(`Arc${index + 1}`, index));
+    controlPolynomes.forEach((value, index) => addArc(`Arc${index + 1}`, index));
   });
 
-  // for (let i = 0; i < controlPolygones.length; ++i) {
-  //   const net1 = controlPolygones[i];
+  // for (let i = 0; i < controlPolynomes.length; ++i) {
+  //   const net1 = controlPolynomes[i];
   //   const arrPoints1 = net1.arrPoints;
   //   let update = false;
   //   for (let j = 0; j < arrPoints1.length; ++j) {
   //     const point1 = arrPoints1[j];
-  //     for (let k = 0; k < controlPolygones.length; ++k) {
-  //       const net2 = controlPolygones[k];
+  //     for (let k = 0; k < controlPolynomes.length; ++k) {
+  //       const net2 = controlPolynomes[k];
 
   //       if (net2 != net1) {
   //         const arrPoints2 = net2.arrPoints;
@@ -711,8 +739,8 @@ function generateInsertTable() {
 
     const newArc = ControlPolygone.insert(coordinates);
     newArc.updateArc();
-    controlPolygones.push(newArc);
-    addArc(`Arc${controlPolygones.length}`, controlPolygones.length - 1);
+    controlPolynomes.push(newArc);
+    addArc(`Arc${controlPolynomes.length}`, controlPolynomes.length - 1);
   });
 
   $('#insert').append(insertButton);
@@ -721,8 +749,8 @@ function generateInsertTable() {
 function generateDropdown(dropdown) {
   dropdown.html('');
 
-  for (let i = 0; i < controlPolygones.length; ++i) {
-    if (selectedPolygone != controlPolygones[i]) {
+  for (let i = 0; i < controlPolynomes.length; ++i) {
+    if (selectedPolynome != controlPolynomes[i]) {
       const option = $(`<option class="join-option" value="${i}">Arc${i + 1}</option>`);
       dropdown.append(option);
     }
@@ -731,14 +759,76 @@ function generateDropdown(dropdown) {
   dropdown.unbind('change').change(() => {
     const index = parseInt(dropdown.val(), 10);
     if (!Number.isNaN(index)) {
-      otherPolygone = controlPolygones[index];
+      otherPolygone = controlPolynomes[index];
     }
   });
 
   dropdown.unbind('hover').hover(() => {
     const index = parseInt(dropdown.val(), 10);
     if (!Number.isNaN(index)) {
-      otherPolygone = controlPolygones[index];
+      otherPolygone = controlPolynomes[index];
     }
   });
+}
+
+function save() {
+  const array = controlPolynomes.map((c) => {
+    const obj = {};
+    obj.points = c.points.map((p) => {
+      return {
+        coordinates: [p.position.x, p.position.y, p.position.z],
+        parents: p.parentPoly.map((p) => controlPolynomes.indexOf(p)),
+      }
+    });
+    obj.neighbours = {
+      N: -1,
+      S: -1,
+    }
+
+    Object.keys(c.neighbours).forEach((key) => {
+      if (c.neighbours[key]) {
+        obj.neighbours[key] = controlPolynomes.indexOf(c.neighbours[key]);
+      }
+    })
+
+    return obj;
+  });
+
+  const link = document.createElement('a');
+  link.download = `arc-${parseInt(Math.random() * 1000000)}.json`
+  const blob = new Blob([JSON.stringify(array)], { type: 'text/json' });
+  link.href = window.URL.createObjectURL(blob);
+  link.click();
+}
+
+async function load(path) {
+  try {
+    const response = await fetch(path, { method: 'GET' });
+    const json = await response.json();
+
+    const polynomes = json.map((obj) => ControlPolygone.insert(obj.points.map(point => point.coordinates)));
+    polynomes.forEach((poly, index) => {
+      if (json[index].neighbours.S != -1) {
+        poly.neighbours.S = polynomes[json[index].neighbours.S]
+      }
+
+      if (json[index].neighbours.N != -1) {
+        poly.neighbours.N = polynomes[json[index].neighbours.N]
+        poly.neighbours.N.points[3] = poly.points[0];
+      }
+
+      poly.points.forEach((point, pointIndex) => {
+        point.parentPoly = json[index].points[pointIndex].parents.map(value => polynomes[value]);
+      })
+      poly.updateArc();
+    });
+
+    controlPolynomes = polynomes;
+    $('#patches').html('');
+    console.log(polynomes);
+    controlPolynomes.forEach((value, index) => addArc(`Arc${index + 1}`, index));
+
+  } catch (e) {
+    alert(e.message);
+  }
 }

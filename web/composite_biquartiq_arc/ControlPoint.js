@@ -39,6 +39,8 @@ class ControlPoint {
   }
 
   move(x, y, z, updateParents = true) {
+    const diff = new DCoordinate3(x, y, z).subtract(this.position);
+    updateParents = true;
     if (arguments.length >= 1) {
       this.position.x = x;
     }
@@ -49,6 +51,43 @@ class ControlPoint {
 
     if (arguments.length >= 3) {
       this.position.z = z;
+    }
+    
+    if (this.parentPoly.length == 2) {
+      if (this.parentPoly[0].neighbours.N == this.parentPoly[1]) {
+        if (this == this.parentPoly[0].points[0]) {
+          this.parentPoly[1].points[2].position = this.parentPoly[1].points[2].position.add(diff);
+          this.parentPoly[1].points[2].mesh.moved = true;
+        }
+
+        this.parentPoly[0].points[1].position = this.parentPoly[0].points[1].position.add(diff);
+        this.parentPoly[0].points[1].mesh.moved = true;
+      } else if (this.parentPoly[0].neighbours.S == this.parentPoly[1]) {
+        if (this == this.parentPoly[0].points[3]) {
+          this.parentPoly[1].points[1].position = this.parentPoly[1].points[1].position.add(diff);
+          this.parentPoly[1].points[1].mesh.moved = true;
+        }
+         this.parentPoly[0].points[2].position = this.parentPoly[0].points[2].position.add(diff);
+        this.parentPoly[0].points[2].mesh.moved = true;
+      }
+    }
+
+    if (this.parentPoly.length == 1) {
+      const index = this.parentPoly[0].points.indexOf(this);
+      if (this.parentPoly[0].neighbours.N && index == 1) {
+        this.parentPoly[0].neighbours.N.points[2].position = this.parentPoly[0].neighbours.N.points[2].position.subtract(diff);
+        this.parentPoly[0].neighbours.N.points[2].mesh.moved = true;
+
+        if (updateParents) {
+          this.parentPoly[0].neighbours.N.updateArc();
+        }
+      } else if (this.parentPoly[0].neighbours.S && index == 2) {
+        this.parentPoly[0].neighbours.S.points[1].position = this.parentPoly[0].neighbours.S.points[1].position.subtract(diff);
+        this.parentPoly[0].neighbours.S.points[1].mesh.moved = true;
+        if (updateParents) {
+          this.parentPoly[0].neighbours.S.updateArc();
+        }
+      }
     }
 
     if (updateParents) {

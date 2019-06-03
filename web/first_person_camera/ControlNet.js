@@ -11,7 +11,11 @@ class ControlNet {
 
     if (generate) {
       this.patch = this.generatePatch();
-      this.image = this.patch.generateImage(30, 30, globalThis.gl.STATIC_DRAW);
+      this.uisolines = this.patch.generateUIsoparametricLines(4, 1, 20);
+      this.uisolines.data[0].forEach(line => line.updateVertexBufferObjects(WebGLRenderingContext.STATIC_DRAW));
+      this.visolines = this.patch.generateVIsoparametricLines(4, 1, 20);
+      this.visolines.data[0].forEach(line => line.updateVertexBufferObjects(WebGLRenderingContext.STATIC_DRAW));
+      this.image = this.patch.generateImage(10, 10, globalThis.gl.STATIC_DRAW);
       this.image.updateVertexBufferObjects(globalThis.gl.STATIC_DRAW);
       this.image.controlNet = this;
     }
@@ -120,6 +124,26 @@ class ControlNet {
     globalThis.gl.bindBuffer(GL.ARRAY_BUFFER, null);
   }
 
+  _renderUIsoLines(viewMatrix) {
+    if (this.uisolines) {
+      globalThis.gl.disable(gl.DEPTH_TEST);
+      this.uisolines.data[0].forEach((line) => {
+        line.renderDerivatives(viewMatrix, 0, WebGLRenderingContext.LINE_STRIP);
+      });
+      globalThis.gl.enable(gl.DEPTH_TEST);
+    }
+  }
+
+  _renderVIsoLines(viewMatrix) {
+    if (this.visolines) {
+      globalThis.gl.disable(gl.DEPTH_TEST);
+      this.visolines.data[0].forEach((line) => {
+        line.renderDerivatives(viewMatrix, 0, WebGLRenderingContext.LINE_STRIP);
+      });
+      globalThis.gl.enable(gl.DEPTH_TEST);
+    }
+  }
+
   _renderLines(viewMatrix) {
     if (!this.loaded || !this.program) {
       return false;
@@ -140,16 +164,18 @@ class ControlNet {
   }
 
   render(viewMatrix, showControlNet) {
+    this.image.render(viewMatrix, globalThis.gl.TRIANGLES);
+    this._renderUIsoLines(viewMatrix);
+    this._renderVIsoLines(viewMatrix);
     if (showControlNet) {
+      this._renderLines(viewMatrix);
       for (let i = 0; i < 4; ++i) {
         for (let j = 0; j < 4; ++j) {
           this.points[i][j].render(viewMatrix);
         }
       }
-
-      this._renderLines(viewMatrix);
     }
-    this.image.render(viewMatrix, globalThis.gl.TRIANGLES);
+
   }
 
   generatePatch() {
@@ -167,8 +193,12 @@ class ControlNet {
   updatePatch() {
     this.generateLinesVBO();
     this.patch = this.generatePatch();
-    this.image = this.patch.generateImage(20, 20, globalThis.gl.STATIC_DRAW);
+    this.image = this.patch.generateImage(10, 10, globalThis.gl.STATIC_DRAW);
     this.image.updateVertexBufferObjects(globalThis.gl.STATIC_DRAW);
+    this.uisolines = this.patch.generateUIsoparametricLines(4, 1, 20);
+    this.uisolines.data[0].forEach(line => line.updateVertexBufferObjects(WebGLRenderingContext.STATIC_DRAW));
+    this.visolines = this.patch.generateVIsoparametricLines(4, 1, 20);
+    this.visolines.data[0].forEach(line => line.updateVertexBufferObjects(WebGLRenderingContext.STATIC_DRAW));
     this.image.controlNet = this;
     this.image.mat = this.defaultMaterial;
     this.image.useTexture = this._useTexture;

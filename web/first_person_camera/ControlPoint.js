@@ -51,7 +51,7 @@ class ControlPoint {
       this.position.z = z;
     }
 
-    if (updateParents) {
+    if (updateParents  || true) {
       this.parentNet.forEach(net => {
         net.updatePatch();
       });

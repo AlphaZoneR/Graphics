@@ -9,22 +9,32 @@ class LinearCombination3 {
     this.vboData = null;
     this.usageFlag = usageFlag;
     this.data = new ColumnMatrix(this.dataCount, DCoordinate3);
-    
+
 
     this.loaded = false;
     this.program = null;
 
-    glProgramFrom('vert.glsl', 'frag.glsl').then((program) => {
+    if (globalThis.netProgram) {
+      this.program = globalThis.netProgram;
       const gl = globalThis.gl;
       if (gl instanceof WebGLRenderingContext) {
-        this.program = program;
         this.vertexLocation = gl.getAttribLocation(this.program, 'in_vert');
         this.matrixLocation = gl.getUniformLocation(this.program, 'u_matrix');
-        this.colorLocation = gl.getUniformLocation(this.program, 'u_color');
+        this.colorLocation = gl.getUniformLocation(this.program, 'in_color');
         this.loaded = true;
       }
-
-    });
+    } else {
+      glProgramFrom('vert.glsl', 'frag.glsl').then((program) => {
+        const gl = globalThis.gl;
+        if (gl instanceof WebGLRenderingContext) {
+          this.program = program;
+          this.vertexLocation = gl.getAttribLocation(this.program, 'in_vert');
+          this.matrixLocation = gl.getUniformLocation(this.program, 'u_matrix');
+          this.colorLocation = gl.getUniformLocation(this.program, 'in_color');
+          this.loaded = true;
+        }
+      });
+    }
   }
 
   deleteVertexBufferObjectsOfData() {
@@ -74,7 +84,7 @@ class LinearCombination3 {
 
   updateVertexBufferObjectsOfData(usageFlag = WebGLRenderingContext.STATIC_DRAW) {
     if (!this.data[0] instanceof DCoordinate3) {
-      
+
       return false;
     }
 
@@ -132,7 +142,7 @@ class LinearCombination3 {
 
       collocationMatrix.data[r] = new Array(currentBlendingFunctionValues.data[0]);
     });
-  
+
     return collocationMatrix.solveLinearSystem(dataPointsToInterpolate, this.data)
   }
 
@@ -173,7 +183,7 @@ class LinearCombination3 {
         if (!this.calculateDerivatives(maxOrderOfDerivatives, u, derivatives)) {
           return null;
         }
-       
+
         result.derivative.data[order][i] = _.cloneDeep(derivatives.at(order));
       }
     }

@@ -445,7 +445,8 @@ window.addEventListener('load', (event) => {
     if (newNet) {
       newNet.points.forEach((row) => {
         row.forEach(point => point.mesh.moved = true);
-      })
+      });
+      console.log('here');
       newNet.updatePatch();
       controlNets.push(newNet);
       addPatch(`Patch${controlNets.length}`, controlNets.length - 1);
@@ -742,4 +743,90 @@ function generateDropdown(dropdown) {
       otherNet = controlNets[index];
     }
   });
+}
+
+function save() {
+  const array = controlNets.map((c) => {
+    const obj = {};
+    obj.points = c.points.map((row) => {
+      return row.map((p) => {
+        return {
+          coordinates: [p.position.x, p.position.y, p.position.z],
+          parents: p.parentNet.map((p) => controlNets.indexOf(p)),
+        }
+      });
+    });
+    obj.neighbours = {
+      N: -1,
+      S: -1,
+      W: -1,
+      E: -1,
+      NW: -1,
+      NE: -1,
+      SE: -1,
+      SW: -1
+    }
+
+    Object.keys(c.neighbours).forEach((key) => {
+      if (c.neighbours[key]) {
+        obj.neighbours[key] = controlNets.indexOf(c.neighbours[key]);
+      }
+    })
+
+    return obj;
+  });
+
+  const link = document.createElement('a');
+  link.download = `patch-${parseInt(Math.random() * 1000000)}.json`
+  const blob = new Blob([JSON.stringify(array)], { type: 'text/json' });
+  link.href = window.URL.createObjectURL(blob);
+  link.click();
+}
+
+async function load(path) {
+  try {
+    const response = await fetch(path, { method: 'GET' });
+    const json = await response.json();
+
+    const netArrays = json.map((obj) => {
+      return obj.points.map(row => row.map(p => p.coordinates));
+    });
+
+
+    const nets = netArrays.map((n) => ControlNet.insert(n));
+    console.log(nets.length)
+
+    nets.forEach((poly, index) => {
+      Object.keys(poly.neighbours).forEach((key) => {
+        if (json[index].neighbours[key] != -1) {
+          poly.neighbours[key] = nets[json[index].neighbours[key]];
+        }
+      });
+      
+      if (json[index].neighbours.N != -1) {
+        poly.neighbours.N.points[3] = poly.points[0];
+      }
+
+      if (json[index].neighbours.S != -1) {
+        poly.neighbours.S.points[0] = poly.points[3];
+      }
+
+      poly.points.forEach((row, rowIndex) => {
+        row.forEach((point, pointIndex) => {
+          point.parentNet = json[index].points[rowIndex][pointIndex].parents.map(value => nets[value]);
+          point.mesh.moved = true;
+        });
+      });
+      poly.updatePatch();
+    });
+
+    controlNets = nets;
+    $('#patches').html('');
+
+    controlNets.forEach((value, index) => addPatch(`Patch${index + 1}`, index));
+
+  } catch (e) {
+    alert(e.message);
+  }
+
 }
