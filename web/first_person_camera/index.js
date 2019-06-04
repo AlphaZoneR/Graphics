@@ -446,7 +446,6 @@ window.addEventListener('load', (event) => {
       newNet.points.forEach((row) => {
         row.forEach(point => point.mesh.moved = true);
       });
-      console.log('here');
       newNet.updatePatch();
       controlNets.push(newNet);
       addPatch(`Patch${controlNets.length}`, controlNets.length - 1);

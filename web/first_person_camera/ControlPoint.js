@@ -5,6 +5,17 @@ class ControlPoint {
     this.mesh.controlPoint = this;
     this.loaded = false;
 
+    this.neighbours = {
+      NW: null,
+      N: null,
+      NE: null,
+      E: null,
+      SE: null,
+      S: null,
+      SW: null,
+      W: null,
+    }
+
     if (globalThis.sphereMesh) {
       this.mesh.vertex = _.cloneDeep(globalThis.sphereMesh.vertex);
       this.mesh.normal = _.cloneDeep(globalThis.sphereMesh.normal);
@@ -39,6 +50,7 @@ class ControlPoint {
   }
 
   move(x, y, z, updateParents = true) {
+    const diff = new DCoordinate3(x, y, z).subtract(this.position);
     if (arguments.length >= 1) {
       this.position.x = x;
     }
@@ -51,10 +63,37 @@ class ControlPoint {
       this.position.z = z;
     }
 
-    if (updateParents  || true) {
+    const moveablePoints = [];
+    const updateableNets = [];
+
+    if (this.parentNet.length > 1) {
+      Object.keys(this.neighbours).forEach((key) => {
+        if (this.neighbours[key] != null) {
+          moveablePoints.push(this.neighbours[key]);
+        }
+      })
+    }
+
+    moveablePoints.forEach((point) => {
+      point.position = point.position.add(diff);
+      point.parentNet.forEach((n) => {
+        if (updateableNets.indexOf(n) === -1) {
+          updateableNets.push(n);
+        }
+      })
+      point.mesh.moved = true;
+    })
+
+    if (updateParents || true) {
       this.parentNet.forEach(net => {
-        net.updatePatch();
+        if (updateableNets.indexOf(net) === -1) {
+          updateableNets.push(net);
+        }
       });
+
+      updateableNets.forEach((net) => {
+        net.updatePatch();
+      })
     }
   }
 

@@ -1,3 +1,37 @@
+function updatePointNeighbours(net, i, j) {
+  if (i > 0) {
+    net.points[i][j].neighbours.N = net.points[i - 1][j];
+  }
+
+  if (i < 3) {
+    net.points[i][j].neighbours.S = net.points[i + 1][j];
+  }
+
+  if (j > 0) {
+    net.points[i][j].neighbours.W = net.points[i][j - 1];
+  }
+
+  if (j < 3) {
+    net.points[i][j].neighbours.E = net.points[i][j + 1];
+  }
+
+  if (i > 0 && j > 0) {
+    net.points[i][j].neighbours.NW = net.points[i - 1][j - 1];
+  }
+
+  if (i > 0 && j < 3) {
+    net.points[i][j].neighbours.NE = net.points[i - 1][j + 1];
+  }
+
+  if (i < 3 && j < 3) {
+    net.points[i][j].neighbours.SE = net.points[i + 1][j + 1];
+  }
+
+  if (i < 3 && j > 0) {
+    net.points[i][j].neighbours.SW = net.points[i + 1][j - 1];
+  }
+}
+
 class ControlNet {
   constructor(generate = true) {
     this.points = new Array(4).fill().map(row => []);
@@ -8,6 +42,14 @@ class ControlNet {
         this.points[i][j].parentNet = [this];
       }
     }
+
+    for (let i = 0; i < 4; ++i) {
+      for (let j = 0; j < 4; ++j) {
+        updatePointNeighbours(this, i, j);
+      }
+    }
+
+
 
     if (generate) {
       this.patch = this.generatePatch();
@@ -214,23 +256,23 @@ class ControlNet {
       this.points[3].forEach(point => {
         point.mesh.mat = MatFBTurquoise;
       });
-    } else if (direction == 'W') {
+    } else if (direction == 'E') {
       this.points[0][0].mesh.mat = MatFBTurquoise;
       this.points[1][0].mesh.mat = MatFBTurquoise;
       this.points[2][0].mesh.mat = MatFBTurquoise;
       this.points[3][0].mesh.mat = MatFBTurquoise;
-    } else if (direction == 'E') {
+    } else if (direction == 'W') {
       this.points[0][3].mesh.mat = MatFBTurquoise;
       this.points[1][3].mesh.mat = MatFBTurquoise;
       this.points[2][3].mesh.mat = MatFBTurquoise;
       this.points[3][3].mesh.mat = MatFBTurquoise;
-    } else if (direction == 'NW') {
-      this.points[0][0].mesh.mat = MatFBTurquoise;
     } else if (direction == 'NE') {
+      this.points[0][0].mesh.mat = MatFBTurquoise;
+    } else if (direction == 'NW') {
       this.points[0][3].mesh.mat = MatFBTurquoise;
-    } else if (direction == 'SE') {
-      this.points[3][3].mesh.mat = MatFBTurquoise;
     } else if (direction == 'SW') {
+      this.points[3][3].mesh.mat = MatFBTurquoise;
+    } else if (direction == 'SE') {
       this.points[3][0].mesh.mat = MatFBTurquoise;
     }
   }
@@ -327,9 +369,23 @@ class ControlNet {
         controlNet.points[3 - i][3] = new ControlPoint(...p[3].position.add(p[3].position.subtract(q[3].position).multiply(i)).data);
       }
 
+
       for (let i = 0; i < 3; ++i) {
         for (let j = 0; j < 4; ++j) {
           controlNet.points[i][j].parentNet = [controlNet];
+          updatePointNeighbours(controlNet, i, j);
+        }
+      }
+
+      for (let i = 0; i < 4; ++i) {
+        extendablePatch.points[0][i].neighbours.N = controlNet.points[2][i];
+
+        if (i > 0) {
+          extendablePatch.points[0][i].neighbours.NW = controlNet.points[2][i - 1];
+        }
+
+        if (i < 3) {
+          extendablePatch.points[0][i].neighbours.NE = controlNet.points[2][i + 1];
         }
       }
 
@@ -369,6 +425,19 @@ class ControlNet {
       for (let i = 1; i < 4; ++i) {
         for (let j = 0; j < 4; ++j) {
           controlNet.points[i][j].parentNet = [controlNet];
+          updatePointNeighbours(controlNet, i, j);
+        }
+      }
+
+      for (let i = 0; i < 4; ++i) {
+        extendablePatch.points[3][i].neighbours.S = controlNet.points[1][i];
+
+        if (i > 0) {
+          extendablePatch.points[3][i].neighbours.SW = controlNet.points[1][i - 1];
+        }
+
+        if (i < 3) {
+          extendablePatch.points[3][i].neighbours.SE = controlNet.points[1][i + 1];
         }
       }
 
@@ -378,7 +447,7 @@ class ControlNet {
       }
 
       return controlNet;
-    } else if (direction == 'W') {
+    } else if (direction == 'E') {
       if (extendablePatch.neighbours.W && update) {
         return null;
       }
@@ -406,18 +475,30 @@ class ControlNet {
       for (let i = 0; i < 4; ++i) {
         for (let j = 0; j < 3; ++j) {
           controlNet.points[i][j].parentNet = [controlNet];
+          updatePointNeighbours(controlNet, i, j);
+        }
+      }
+
+      for (let i = 0; i < 4; ++i) {
+        extendablePatch.points[i][0].neighbours.W = controlNet.points[i][2];
+
+        if (i > 0) {
+          extendablePatch.points[i][0].neighbours.NW = controlNet.points[i - 1][2];
+        }
+
+        if (i < 3) {
+          extendablePatch.points[i][0].neighbours.SW = controlNet.points[i + 1][2];
         }
       }
 
       if (update) {
-        extendablePatch.neighbours.W = controlNet;
-        controlNet.neighbours.E = extendablePatch;
-
+        extendablePatch.neighbours.E = controlNet;
+        controlNet.neighbours.W = extendablePatch;
       }
 
       return controlNet;
 
-    } else if (direction == 'E') {
+    } else if (direction == 'W') {
       if (extendablePatch.neighbours.E && update) {
         return null;
       }
@@ -446,12 +527,25 @@ class ControlNet {
       for (let i = 0; i < 4; ++i) {
         for (let j = 1; j < 4; ++j) {
           controlNet.points[i][j].parentNet = [controlNet];
+          updatePointNeighbours(controlNet, i, j);
+        }
+      }
+
+      for (let i = 0; i < 4; ++i) {
+        extendablePatch.points[i][3].neighbours.E = controlNet.points[i][1];
+
+        if (i > 0) {
+          extendablePatch.points[i][3].neighbours.NE = controlNet.points[i - 1][1];
+        }
+
+        if (i < 3) {
+          extendablePatch.points[i][3].neighbours.SE = controlNet.points[i + 1][1];
         }
       }
 
       if (update) {
-        extendablePatch.neighbours.E = controlNet;
-        controlNet.neighbours.W = extendablePatch;
+        extendablePatch.neighbours.W = controlNet;
+        controlNet.neighbours.E = extendablePatch;
       }
 
       return controlNet;
@@ -463,6 +557,21 @@ class ControlNet {
 
       const NORTH = this.extend('N', extendablePatch, false);
       const controlNet = this.extend('E', NORTH, false);
+
+      if (extendablePatch.neighbours.N) {
+        for (let i = 0; i < 4; ++i) {
+          controlNet.points[i][3] = extendablePatch.neighbours.N.points[i][0];
+          controlNet.points[i][3].parentNet.push(controlNet);
+        }
+      }
+
+      if (extendablePatch.neighbours.E) {
+        console.log('here');
+        for (let i = 0; i < 4; ++i) {
+          controlNet.points[3][i] = extendablePatch.neighbours.E.points[0][i];
+          controlNet.points[3][i].parentNet.push(controlNet);
+        }
+      }
 
       if (update) {
         extendablePatch.neighbours.NE = controlNet;
@@ -484,7 +593,7 @@ class ControlNet {
       }
 
       return controlNet;
-    } else if (direction == 'SW') {
+    } else if (direction == 'SE') {
       if (extendablePatch.neighbours.SW) {
         return null;
       }
@@ -498,7 +607,7 @@ class ControlNet {
       }
 
       return controlNet;
-    } else if (direction == 'SE') {
+    } else if (direction == 'SW') {
       if (extendablePatch.neighbours.SE) {
         return null;
       }
