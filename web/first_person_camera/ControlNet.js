@@ -1,10 +1,18 @@
+const TYPES = {
+  CORNER: 0,
+  EDGE: 1,
+  INSIDE: 2,
+}
+
 function updatePointNeighbours(net, i, j) {
   if (i == 0 || i == 3 || j == 0 || j == 3) {
-    net.points[i][j].edgePoint = true;
+    net.points[i][j].type = TYPES.EDGE;
+  } else {
+    net.points[i][j].type = TYPES.INSIDE;
   }
 
   if ((i == 0 && j == 0) || (i == 0 && j == 3) || (i == 3 && j == 0) || (i == 3 && j == 3)) {
-    net.points[i][j].cornerPoint = true;
+    net.points[i][j].type = TYPES.CORNER;
   }
   
   if (i > 0) {
@@ -215,8 +223,8 @@ class ControlNet {
 
   render(viewMatrix, showControlNet) {
     this.image.render(viewMatrix, globalThis.gl.TRIANGLES);
-    this._renderUIsoLines(viewMatrix);
-    this._renderVIsoLines(viewMatrix);
+    // this._renderUIsoLines(viewMatrix);
+    // this._renderVIsoLines(viewMatrix);
     if (showControlNet) {
       this._renderLines(viewMatrix);
       for (let i = 0; i < 4; ++i) {
@@ -574,7 +582,6 @@ class ControlNet {
       }
 
       if (extendablePatch.neighbours.E) {
-        console.log('here');
         for (let i = 0; i < 4; ++i) {
           controlNet.points[3][i] = extendablePatch.neighbours.E.points[0][i];
           controlNet.points[3][i].parentNet.push(controlNet);
