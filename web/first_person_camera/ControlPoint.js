@@ -4,6 +4,8 @@ class ControlPoint {
     this.mesh = new TriangulatedMesh3();
     this.mesh.controlPoint = this;
     this.loaded = false;
+    this.edgePoint = false;
+    this.cornerPoint = false;
 
     this.neighbours = {
       NW: null,
@@ -66,7 +68,58 @@ class ControlPoint {
     const moveablePoints = [];
     const updateableNets = [];
 
-    if (this.parentNet.length > 1) {
+    if (this.parentNet.length == 1 || true) {
+      if (this.parentNet[0].neighbours.N && this.neighbours.N.edgePoint && !this.cornerPoint) {
+        this.neighbours.N.neighbours.N.position = this.neighbours.N.neighbours.N.position.subtract(diff);
+        this.neighbours.N.neighbours.N.mesh.moved = true;
+        updateableNets.push(this.parentNet[0].neighbours.N);
+      }
+
+      if (this.parentNet[0].neighbours.S && this.neighbours.S.edgePoint && !this.cornerPoint) {
+        this.neighbours.S.neighbours.S.position = this.neighbours.S.neighbours.S.position.subtract(diff);
+        this.neighbours.S.neighbours.S.mesh.moved = true;
+        updateableNets.push(this.parentNet[0].neighbours.S);
+      }
+
+      if (this.parentNet[0].neighbours.E && this.neighbours.E.edgePoint && !this.cornerPoint) {
+        this.neighbours.E.neighbours.E.position = this.neighbours.E.neighbours.E.position.subtract(diff);
+        this.neighbours.E.neighbours.E.mesh.moved = true;
+        updateableNets.push(this.parentNet[0].neighbours.E);
+      }
+
+      if (this.parentNet[0].neighbours.W && this.neighbours.W.edgePoint && !this.cornerPoint) {
+        this.neighbours.W.neighbours.W.position = this.neighbours.W.neighbours.W.position.subtract(diff);
+        this.neighbours.W.neighbours.W.mesh.moved = true;
+        updateableNets.push(this.parentNet[0].neighbours.W);
+      }
+
+      if (this.parentNet[0].neighbours.SE && this.neighbours.SE.edgePoint && !this.cornerPoint) {
+        console.log('here');
+        this.neighbours.SE.neighbours.SE.position = this.neighbours.SE.neighbours.SE.position.add(diff);
+        this.neighbours.SE.neighbours.SE.mesh.moved = true;
+        updateableNets.push(this.parentNet[0].neighbours.SE);
+      }
+
+      if (this.parentNet[0].neighbours.SW && this.neighbours.SW.edgePoint && !this.cornerPoint) {
+        this.neighbours.SW.neighbours.SW.position = this.neighbours.SW.neighbours.SW.position.add(diff);
+        this.neighbours.SW.neighbours.SW.mesh.moved = true;
+        updateableNets.push(this.parentNet[0].neighbours.SW);
+      }
+
+      if (this.parentNet[0].neighbours.NE && this.neighbours.NE.edgePoint && !this.cornerPoint) {
+        this.neighbours.NE.neighbours.NE.position = this.neighbours.NE.neighbours.NE.position.add(diff);
+        this.neighbours.NE.neighbours.NE.mesh.moved = true;
+        updateableNets.push(this.parentNet[0].neighbours.NE);
+      }
+
+      if (this.parentNet[0].neighbours.NW && this.neighbours.NW.edgePoint && !this.cornerPoint) {
+        this.neighbours.NW.neighbours.NW.position = this.neighbours.NW.neighbours.NW.position.add(diff);
+        this.neighbours.NW.neighbours.NW.mesh.moved = true;
+        updateableNets.push(this.parentNet[0].neighbours.NW);
+      }
+    }
+
+    if (this.edgePoint && this.parentNet.length > 1) {
       Object.keys(this.neighbours).forEach((key) => {
         if (this.neighbours[key] != null) {
           moveablePoints.push(this.neighbours[key]);

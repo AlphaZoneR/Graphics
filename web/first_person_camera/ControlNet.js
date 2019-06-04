@@ -1,4 +1,12 @@
 function updatePointNeighbours(net, i, j) {
+  if (i == 0 || i == 3 || j == 0 || j == 3) {
+    net.points[i][j].edgePoint = true;
+  }
+
+  if ((i == 0 && j == 0) || (i == 0 && j == 3) || (i == 3 && j == 0) || (i == 3 && j == 3)) {
+    net.points[i][j].cornerPoint = true;
+  }
+  
   if (i > 0) {
     net.points[i][j].neighbours.N = net.points[i - 1][j];
   }
@@ -492,8 +500,8 @@ class ControlNet {
       }
 
       if (update) {
-        extendablePatch.neighbours.E = controlNet;
-        controlNet.neighbours.W = extendablePatch;
+        extendablePatch.neighbours.W = controlNet;
+        controlNet.neighbours.E = extendablePatch;
       }
 
       return controlNet;
@@ -544,8 +552,8 @@ class ControlNet {
       }
 
       if (update) {
-        extendablePatch.neighbours.W = controlNet;
-        controlNet.neighbours.E = extendablePatch;
+        extendablePatch.neighbours.E = controlNet;
+        controlNet.neighbours.W = extendablePatch;
       }
 
       return controlNet;
