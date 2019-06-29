@@ -5,6 +5,7 @@ uniform vec3 u_eye_position;
 
 attribute vec3 position;   // attributes
 attribute vec3 normal;
+attribute vec4 tex;
 
 varying vec3 interpolated_eye_position;
 varying vec3 interpolated_normal;

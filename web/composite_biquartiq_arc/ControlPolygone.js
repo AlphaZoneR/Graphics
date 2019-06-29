@@ -316,7 +316,7 @@ class ControlPolygone {
       const q = _.cloneDeep(otherArc.points[1]);
       otherSecondPoint = new ControlPoint(...p.position.add(p.position.subtract(q.position)).data)
     } else if (otherDirection == 'S') {
-      if (otherArc.neighbours.N) {
+      if (otherArc.neighbours.S) {
         return null;
       }
 
@@ -374,6 +374,7 @@ class ControlPolygone {
 
     if (thisDirection == 'S') {
       if (this.neighbours.S) {
+        console.log('tS');
         return null;
       }
 
@@ -381,6 +382,7 @@ class ControlPolygone {
       thisSecondPoint = _.cloneDeep(this.points[1]);
     } else if (thisDirection == 'N') {
       if (this.neighbours.N) {
+        console.log('tN');
         return null;
       }
 
@@ -392,14 +394,16 @@ class ControlPolygone {
     let otherSecondPoint = [];
 
     if (otherDirection == 'S') {
-      if (this.neighbours.S) {
+      if (otherArc.neighbours.S) {
+        console.log('oS');
         return null;
       }
 
       otherFirstPoint = _.cloneDeep(otherArc.points[0]);
       otherSecondPoint = _.cloneDeep(otherArc.points[1]);
     } else if (otherDirection == 'N') {
-      if (this.neighbours.N) {
+      if (otherArc.neighbours.N) {
+        console.log('oN');
         return null;
       }
 

@@ -20,7 +20,7 @@ class TriangulatedMesh3 {
       this.normal = new Array(vertexCount).fill().map(u => new DCoordinate3());
       this.tex = new Array(vertexCount).fill().map(u => new TCoordinate4());
       this.face = new Array(faceCount).fill().map(u => new TriangularFace());
-      glProgramFrom('/shaders/agoston.vert', '/shaders/agoston.frag')
+      glProgramFrom('/shaders/toon.vert', '/shaders/toon.frag')
         .then((program) => {
           this.program = program;
           this.frontMaterial = {

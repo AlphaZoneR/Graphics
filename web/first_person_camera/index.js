@@ -419,6 +419,18 @@ window.addEventListener('load', (event) => {
     document.getElementById('scale-slider').value = parseInt(scaleValue * 100);
   }; // mobile
 
+  $('#uisolines').change((event1) => {
+    if (selectedNet) {
+      selectedNet.updateUISOLines(parseInt($("#uisolines").val()));
+    }
+  });
+
+  $('#visolines').change((event1) => {
+    if (selectedNet) {
+      selectedNet.updateVISOLines(parseInt($("#visolines").val()));
+    }
+  });
+
   $('.activity-element').click((event) => {
     const self = $(event.target);
     $('.activity-element').removeClass('selected');
@@ -679,7 +691,7 @@ function generateInsertTable() {
           colDOM.append(inputDOM);
           rowDOM.append(colDOM);
         } else if (k == 1) {
-          const inputDOM = $(`<input id="${i}${j}${k}" type="text" value="${Math.random()}">`);
+          const inputDOM = $(`<input id="${i}${j}${k}" type="text" value="${Math.random() / 4}">`);
           colDOM.append(inputDOM);
           rowDOM.append(colDOM);
         } else if (k == 2) {

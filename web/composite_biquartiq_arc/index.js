@@ -628,6 +628,7 @@ window.addEventListener('load', (event) => {
 function deleteArc(arc) {
   arc.removeFromNeighbours();
   const index = controlPolynomes.indexOf(arc);
+  console.log(index);
   $(`#${index}`).remove();
   controlPolynomes = controlPolynomes.filter((val, i) => i !== index);
 

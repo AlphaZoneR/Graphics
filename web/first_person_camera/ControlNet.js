@@ -14,7 +14,7 @@ function updatePointNeighbours(net, i, j) {
   if ((i == 0 && j == 0) || (i == 0 && j == 3) || (i == 3 && j == 0) || (i == 3 && j == 3)) {
     net.points[i][j].type = TYPES.CORNER;
   }
-  
+
   if (i > 0) {
     net.points[i][j].neighbours.N = net.points[i - 1][j];
   }
@@ -65,14 +65,12 @@ class ControlNet {
       }
     }
 
-
+    this._isoCount = 4;
 
     if (generate) {
       this.patch = this.generatePatch();
-      this.uisolines = this.patch.generateUIsoparametricLines(4, 1, 20);
-      this.uisolines.data[0].forEach(line => line.updateVertexBufferObjects(WebGLRenderingContext.STATIC_DRAW));
-      this.visolines = this.patch.generateVIsoparametricLines(4, 1, 20);
-      this.visolines.data[0].forEach(line => line.updateVertexBufferObjects(WebGLRenderingContext.STATIC_DRAW));
+      this.updateVISOLines(this._isoCount);
+      this.updateUISOLines(this._isoCount);
       this.image = this.patch.generateImage(10, 10, globalThis.gl.STATIC_DRAW);
       this.image.updateVertexBufferObjects(globalThis.gl.STATIC_DRAW);
       this.image.controlNet = this;
@@ -118,6 +116,16 @@ class ControlNet {
       SW: null,
       W: null,
     }
+  }
+
+  updateUISOLines(count = 4) {
+    this.uisolines = this.patch.generateUIsoparametricLines(count, 1, 20);
+    this.uisolines.data[0].forEach(line => line.updateVertexBufferObjects(WebGLRenderingContext.STATIC_DRAW));
+  }
+
+  updateVISOLines(count = 4) {
+    this.visolines = this.patch.generateVIsoparametricLines(count, 1, 20);
+    this.visolines.data[0].forEach(line => line.updateVertexBufferObjects(WebGLRenderingContext.STATIC_DRAW));
   }
 
   deleteLinesVBO() {
@@ -223,8 +231,8 @@ class ControlNet {
 
   render(viewMatrix, showControlNet) {
     this.image.render(viewMatrix, globalThis.gl.TRIANGLES);
-    // this._renderUIsoLines(viewMatrix);
-    // this._renderVIsoLines(viewMatrix);
+    this._renderUIsoLines(viewMatrix);
+    this._renderVIsoLines(viewMatrix);
     if (showControlNet) {
       this._renderLines(viewMatrix);
       for (let i = 0; i < 4; ++i) {
@@ -234,6 +242,12 @@ class ControlNet {
       }
     }
 
+  }
+
+  set isoCount(value) {
+    this._isoCount = value;
+    this.updateUISOLines(value);
+    this.updateVISOLines(value);
   }
 
   generatePatch() {
@@ -253,10 +267,8 @@ class ControlNet {
     this.patch = this.generatePatch();
     this.image = this.patch.generateImage(10, 10, globalThis.gl.STATIC_DRAW);
     this.image.updateVertexBufferObjects(globalThis.gl.STATIC_DRAW);
-    this.uisolines = this.patch.generateUIsoparametricLines(4, 1, 20);
-    this.uisolines.data[0].forEach(line => line.updateVertexBufferObjects(WebGLRenderingContext.STATIC_DRAW));
-    this.visolines = this.patch.generateVIsoparametricLines(4, 1, 20);
-    this.visolines.data[0].forEach(line => line.updateVertexBufferObjects(WebGLRenderingContext.STATIC_DRAW));
+    this.updateVISOLines(this._isoCount);
+    this.updateUISOLines(this._isoCount);
     this.image.controlNet = this;
     this.image.mat = this.defaultMaterial;
     this.image.useTexture = this._useTexture;
@@ -355,6 +367,13 @@ class ControlNet {
       }
     }
 
+    for (let i = 0; i < 4; ++i) {
+      for (let j = 0; j < 4; ++j) {
+        updatePointNeighbours(newNet, i, j);
+        newNet.points[i][j].mesh.moved = true;
+      }
+    }
+
     return newNet;
   }
 
@@ -408,7 +427,6 @@ class ControlNet {
       if (update) {
         extendablePatch.neighbours.N = controlNet;
         controlNet.neighbours.S = extendablePatch;
-
       }
 
       return controlNet;
@@ -801,19 +819,19 @@ class ControlNet {
       newNet.neighbours.S = otherNet;
     } else if (thisDirection == 'W') {
       for (let j = 0; j < 4; ++j) {
-        newNet.points[j][3] = thisFirstRow[j];
+        newNet.points[j][3] = thisFirstRow[3 - j];
       }
 
       for (let j = 0; j < 4; ++j) {
-        newNet.points[j][2] = thisSecondRow[j];
+        newNet.points[j][2] = thisSecondRow[3 - j];
       }
 
       for (let j = 0; j < 4; ++j) {
-        newNet.points[j][1] = otherSecondRow[j];
+        newNet.points[j][1] = otherSecondRow[3 - j];
       }
 
       for (let j = 0; j < 4; ++j) {
-        newNet.points[j][0] = otherFirstRow[j];
+        newNet.points[j][0] = otherFirstRow[3 - j];
       }
 
       this.neighbours.W = newNet;
@@ -841,6 +859,12 @@ class ControlNet {
       newNet.neighbours.W = this;
       otherNet.neighbours.W = newNet;
       newNet.neighbours.E = otherNet;
+    }
+
+    for (let i = 0; i < 4; ++i) {
+      for (let j = 0; j < 4; ++j) {
+        updatePointNeighbours(newNet, i, j);
+      }
     }
 
     return newNet;
