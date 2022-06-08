@@ -20,7 +20,7 @@ class TriangulatedMesh3 {
         this.normal = new Array(vertexCount).fill().map(u => new DCoordinate3());
         this.tex = new Array(vertexCount).fill().map(u => new TCoordinate4());
         this.face = new Array(faceCount).fill().map(u => new TriangularFace());
-        glProgramFrom('/shaders/reflection_lines.vert', '/shaders/reflection_lines.frag')
+        glProgramFrom('../shaders/reflection_lines.vert', '../shaders/reflection_lines.frag')
           .then((program) => {
             this.program = program;
   
