@@ -40,7 +40,7 @@ class TriangulatedMesh3 {
             this.vertexLocation = gl.getAttribLocation(this.program, 'position');
             this.normalLocation = gl.getAttribLocation(this.program, 'normal');
   
-            glProgramFrom('/shaders/vert_light.glsl', '/shaders/frag_light.glsl')
+            glProgramFrom('../shaders/vert_light.glsl', '../shaders/frag_light.glsl')
               .then((lightProg) => {
                 this.lightProg = lightProg;
                 this.lightVertexLocation = gl.getAttribLocation(this.lightProg, 'in_vert');
