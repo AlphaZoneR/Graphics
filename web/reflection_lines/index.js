@@ -47,7 +47,7 @@ window.addEventListener('load', async (event) => {
   canvas.height = canvas.clientHeight;
 
   globalThis.mesh = new TriangulatedMesh3();
-  await globalThis.mesh.fromOFF('/meshes/elephant.off', true);
+  await globalThis.mesh.fromOFF('../meshes/elephant.off', true);
   globalThis.mesh.updateVertexBufferObjects(gl.STATIC_DRAW);
   gl.enable(gl.DEPTH_TEST);
 
@@ -116,7 +116,7 @@ window.addEventListener('load', (event) => {
 
 async function currentCurve(name) {
   if (['mouse', 'house', 'elephant', 'space_shuttle'].indexOf(name) !== -1) {
-    await globalThis.mesh.fromOFF(`/meshes/${name}.off`, true);
+    await globalThis.mesh.fromOFF(`../meshes/${name}.off`, true);
     globalThis.mesh.updateVertexBufferObjects(WebGLRenderingContext.STATIC_DRAW);
   }
 
